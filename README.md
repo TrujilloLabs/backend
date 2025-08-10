@@ -25,10 +25,26 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+Este proyecto base incluye:
+- Configuración global con `@nestjs/config`
+- Validación de datos con `class-validator` y `class-transformer`
+- CORS habilitado
+- Health check endpoint (`/health`)
+- Configuración de linting y testing
+- Variables de entorno de ejemplo (`.env.example`)
+
 ## Project setup
 
 ```bash
 $ npm install
+```
+
+## Environment Configuration
+
+Copy the example environment file and configure your variables:
+
+```bash
+$ cp .env.example .env
 ```
 
 ## Compile and run the project
@@ -43,6 +59,11 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## API Endpoints
+
+- `GET /` - Returns "Hello World!"
+- `GET /health` - Returns application health status
 
 ## Run tests
 

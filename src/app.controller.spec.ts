@@ -19,4 +19,14 @@ describe('AppController', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
   });
+
+  describe('health', () => {
+    it('should return health status', () => {
+      const health = appController.getHealth();
+      expect(health).toHaveProperty('status', 'ok');
+      expect(health).toHaveProperty('service', 'backend');
+      expect(health).toHaveProperty('version', '0.0.1');
+      expect(health).toHaveProperty('timestamp');
+    });
+  });
 });
