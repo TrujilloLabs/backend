@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 // import { AuthModule } from './auth/auth.module';
 // import { StoresModule } from './stores/stores.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { StoresModule } from './modules/stores/stores.module';
+import { UsersModule } from './modules/users/users.module';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, }),
 
@@ -17,7 +20,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     password: process.env.DB_PASSWORD,
     autoLoadEntities: true,
     synchronize: true,  // Disable this in production
-  })
+  }),
+
+  AuthModule,
+
+  StoresModule,
+
+  UsersModule
   ],
   // controllers: [AppController],
   // providers: [AppService],
