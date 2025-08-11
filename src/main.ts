@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { seedSuperAdmin } from './modules/seed/seed-superadmin';
+import { DataSource } from 'typeorm';
 
 // async function bootstrap() {
 //   const app = await NestFactory.create(AppModule);
@@ -24,6 +26,7 @@ async function bootstrap() {
       }
     })
   )
+
 
 
   const port = process.env.PORT ?? 3000;

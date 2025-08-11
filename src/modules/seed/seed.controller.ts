@@ -1,34 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-// import { SeedService } from './seed.service';
-// import { CreateSeedDto } from './dto/create-seed.dto';
-// import { UpdateSeedDto } from './dto/update-seed.dto';
+import { SeedService } from './seed.service';
 
-// @Controller('seed')
-// export class SeedController {
-//   constructor(private readonly seedService: SeedService) {}
 
-//   @Post()
-//   create(@Body() createSeedDto: CreateSeedDto) {
-//     return this.seedService.create(createSeedDto);
-//   }
+@Controller('seed')
+export class SeedController {
+    constructor(private readonly seedService: SeedService) { }
 
-//   @Get()
-//   findAll() {
-//     return this.seedService.findAll();
-//   }
 
-//   @Get(':id')
-//   findOne(@Param('id') id: string) {
-//     return this.seedService.findOne(+id);
-//   }
 
-//   @Patch(':id')
-//   update(@Param('id') id: string, @Body() updateSeedDto: UpdateSeedDto) {
-//     return this.seedService.update(+id, updateSeedDto);
-//   }
+    @Get()
+    executeSeed() {
+        return this.seedService.executeSeed();
+    }
 
-//   @Delete(':id')
-//   remove(@Param('id') id: string) {
-//     return this.seedService.remove(+id);
-//   }
-// }
+}
