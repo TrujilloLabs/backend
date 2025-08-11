@@ -1,0 +1,82 @@
+Table Store {
+  store_id int [pk, increment]
+  name varchar(50)
+  logo_url varchar(500)
+  description varchar(250)
+  state enum('activa', 'inactiva')
+  creation_date datetime
+}
+
+Table License {
+  license_id int [pk, increment]
+  store_id int [unique]
+  start_date date
+  end_date date
+  state enum('activa', 'vencida', 'suspendida')
+  plan enum('mensual', 'anual')
+}
+
+Table MainCategory {
+  category_id int [pk, increment]
+  store_id int
+  name varchar(255)
+  icon_url varchar(500)
+  orden int
+}
+
+Table Subcategory {
+  subcategory_id int [pk, increment]
+  category_id int
+  name varchar(250)
+  orden int
+}
+
+Table Product {
+  product_id int [pk, increment]
+  subcategory_id int
+  name varchar(250)
+  description varchar(250)
+  price_cop decimal(10,2)
+  price_usd decimal(10,2)
+  image_url varchar(500)
+  stock int
+  state enum('activo', 'inactivo')
+}
+
+Table User {
+  user_id int [pk, increment]
+  store_id int
+  name varchar(250)
+  email varchar(200) [unique]
+  telephone varchar(20)
+  address varchar(200)
+  registration_date datetime
+  state enum('activo', 'inactivo')
+}
+
+Table Order {
+  order_id int [pk, increment]
+  user_id int
+  store_id int
+  order_date datetime
+  state enum('pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado')
+  payment_method enum('contraEntrega', 'pasarelaLocal')
+}
+
+Table OrderItem {
+  item_id int [pk, increment]
+  order_id int
+  product_id int
+  quantity int
+  unit_price decimal(10,2)
+}
+
+Ref: License.store_id > Store.store_id
+Ref: MainCategory.store_id > Store.store_id
+Ref: Subcategory.category_id > MainCategory.category_id
+Ref: Product.subcategory_id > Subcategory.subcategory_id
+Ref: User.store_id > Store.store_id
+Ref: Order.user_id > User.user_id
+Ref: Order.store_id > Store.store_id
+Ref: OrderItem.order_id > Order.order_id
+Ref: OrderItem.product_id > Product.product_id
