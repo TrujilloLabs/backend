@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { StoresModule } from './modules/stores/stores.module';
 import { UsersModule } from './modules/users/users.module';
+import { LinceseModule } from './modules/lincese/lincese.module';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, }),
 
@@ -26,7 +27,9 @@ import { UsersModule } from './modules/users/users.module';
 
   StoresModule,
 
-  UsersModule
+  UsersModule,
+
+  LinceseModule
   ],
   // controllers: [AppController],
   // providers: [AppService],
