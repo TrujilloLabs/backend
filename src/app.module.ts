@@ -9,11 +9,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     host: process.env.DB_HOST,
     // port: +process.env.DB_PORT,
     port: +(process.env.DB_PORT ?? 5432), // Default to 5432 if undefined
+    database: process.env.DB_NAME,
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
     autoLoadEntities: true,
-    synchronize: true,
+    synchronize: true,  // Disable this in production
   })
   ],
   // controllers: [AppController],
