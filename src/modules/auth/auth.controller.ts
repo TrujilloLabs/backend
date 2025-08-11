@@ -2,14 +2,19 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { CreateStoreDto } from '../stores/dto/create-store.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  // @UseGuards(AuthGuard, RolesGuard)
+  //  @Roles(UserRole.SUPER_ADMIN) // Solo el SUPER_ADMIN puede crear tiendas
+  async createStore(@Body() createStoreDto: CreateStoreDto) {
+    // const User = req.user
+
+    return this.authService.createStoreWithAdmin(createStoreDto);
   }
 
   @Get()
