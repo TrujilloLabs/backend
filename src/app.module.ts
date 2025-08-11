@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { StoresModule } from './modules/stores/stores.module';
 import { UsersModule } from './modules/users/users.module';
 import { LinceseModule } from './modules/lincese/lincese.module';
+import { SeedModule } from './modules/seed/seed.module';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, }),
 
@@ -29,7 +30,9 @@ import { LinceseModule } from './modules/lincese/lincese.module';
 
   UsersModule,
 
-  LinceseModule
+  LinceseModule,
+
+  SeedModule
   ],
   // controllers: [AppController],
   // providers: [AppService],
