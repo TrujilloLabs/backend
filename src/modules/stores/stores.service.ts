@@ -15,9 +15,19 @@ export class StoresService {
 
   }
 
-  create(createStoreDto: CreateStoreDto) {
-    return 'This action adds a new store';
+  // ...existing code...
+  async create(createStoreDto: CreateStoreDto) {
+    const storeRepo = this.DataSource.getRepository(Store);
+    const store = storeRepo.create({
+      name: createStoreDto.name,
+      logo_url: createStoreDto.logo_url,
+      description: createStoreDto.description,
+      state: (createStoreDto.state as 'activa' | 'inactiva') ?? 'inactiva', // Usa 'inactiva' si no viene en el DTO
+    });
+    const savedStore = await storeRepo.save(store);
+    return savedStore;
   }
+  // ...existing code...
 
   findAll() {
     return `This action returns all stores`;
