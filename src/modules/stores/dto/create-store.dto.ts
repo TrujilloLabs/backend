@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PartialType } from '@nestjs/swagger';
+import { LicenseDto } from 'src/modules/lincese/dto/create-lincese.dto';
 
 
 
@@ -36,10 +37,10 @@ export class CreateStoreDto {
 
     // DTO anidado para la licencia, para que la validación se aplique
     // también a sus campos.
-    //   @IsOptional()
-    //   @ValidateNested()
-    //   @Type(() => LicenseDto)
-    //   license?: LicenseDto;
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => LicenseDto)
+    license?: LicenseDto;
 }
 
 
