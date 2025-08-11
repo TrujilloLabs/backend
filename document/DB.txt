@@ -1,0 +1,110 @@
+-- Eliminar la base de datos si existe para empezar de cero
+DROP DATABASE IF EXISTS licenciadaTrujiStudios;
+-- Crear la base de datos
+CREATE DATABASE licenciadaTrujiStudios;
+-- Usar la base de datos
+USE licenciadaTrujiStudios;
+
+-- 1. Tabla Store (Tienda)
+-- La entidad principal. 'state' usa un ENUM para estados predefinidos.
+CREATE TABLE Store (
+    store_id INT PRIMARY KEY AUTO_INCREMENT, -- AUTO_INCREMENT para IDs automáticos
+    name VARCHAR(50) NOT NULL,
+    logo_url VARCHAR(500) NOT NULL,
+    description VARCHAR(250), -- La descripción puede ser opcional
+    state ENUM('activa', 'inactiva') NOT NULL,
+    creation_date DATETIME NOT NULL -- DATETIME para fecha y hora de creación
+);
+
+-- 2. Tabla License (Licencia)
+-- Relación 1:1 con Store. Se usa UNIQUE en la FK para asegurar una sola licencia por tienda.
+-- Se agregó la columna 'plan' de tu lista de entidades.
+CREATE TABLE License (
+    license_id INT PRIMARY KEY AUTO_INCREMENT,
+    store_id INT UNIQUE, -- UNIQUE asegura la relación 1:1
+    start_date DATE NOT NULL, -- DATE para solo guardar la fecha
+    end_date DATE NOT NULL,
+    state ENUM('activa', 'vencida', 'suspendida') NOT NULL,
+    plan ENUM('mensual', 'anual') NOT NULL, -- Añadimos el plan de la licencia
+    FOREIGN KEY (store_id) REFERENCES Store(store_id) ON DELETE CASCADE -- Elimina la licencia si se borra la tienda
+);
+
+-- 3. Tabla MainCategory (Categoría Principal)
+-- Relación 1:N con Store. Una tienda puede tener muchas categorías principales.
+-- ON DELETE CASCADE elimina las categorías si la tienda se borra.
+CREATE TABLE MainCategory (
+    category_id INT PRIMARY KEY AUTO_INCREMENT,
+    store_id INT,
+    name VARCHAR(255) NOT NULL,
+    icon_url VARCHAR(500) NOT NULL,
+    orden INT NOT NULL, -- Se usa INT para el orden
+    FOREIGN KEY (store_id) REFERENCES Store(store_id) ON DELETE CASCADE
+);
+
+-- 4. Tabla Subcategory Subcategoría)
+-- Relación 1:N con MainCategory. Una categoría principal puede tener muchas subcategorías.
+-- ON DELETE CASCADE elimina las subcategorías si se borra la categoría principal.
+CREATE TABLE Subcategory (
+    subCategory_id INT PRIMARY KEY AUTO_INCREMENT,
+    category_id INT,
+    name VARCHAR(250) NOT NULL,
+    orden INT NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES MainCategory(category_id) ON DELETE CASCADE
+);
+
+-- 5. Tabla Product (Producto)
+-- Relación 1:N con Subcategory. Una subcategoría puede tener muchos productos.
+-- ON DELETE CASCADE elimina los productos si se borra la subcategoría.
+CREATE TABLE Product (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    subCategory_id INT,
+    name VARCHAR(250) NOT NULL,
+    description VARCHAR(250),
+    price_cop DECIMAL(10, 2) NOT NULL, -- DECIMAL para precios con 2 decimales
+    price_usd DECIMAL(10, 2)NULL, -- DECIMAL para precios opcionales
+    image_url VARCHAR(500) NOT NULL,
+    stock INT NOT NULL,
+    state ENUM('activo', 'inactivo') NOT NULL,
+    FOREIGN KEY (subcategory_id) REFERENCES Subcategory(subcategory_id) ON DELETE CASCADE
+);
+
+-- 6. Tabla User (Usuario Cliente)
+CREATE TABLE User (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    store_id INT, -- Agregamos la clave foránea para la tienda
+    name VARCHAR(250) NOT NULL,
+    email VARCHAR(200) NOT NULL UNIQUE, -- El email debe ser único
+    telephone VARCHAR(20), -- El teléfono puede ser opcional
+    address VARCHAR(200), -- La dirección puede ser opcional
+    registration_date DATETIME NOT NULL,
+    state ENUM('activo', 'inactivo') NOT NULL,
+    FOREIGN KEY (store_id) REFERENCES Store(store_id) ON DELETE CASCADE
+);
+
+-- 7. Tabla Order (Pedido)
+-- Relación 1:N con User y Store.
+CREATE TABLE `Order` ( -- Uso de ` ` para evitar conflictos con la palabra reservada 'ORDER'
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    store_id INT,
+    order_date DATETIME NOT NULL, -- Renombramos la columna para consistencia
+    state ENUM('pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado') NOT NULL,
+    payment_method ENUM('contraEntrega', 'pasarelaLocal') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE SET NULL, -- Si el usuario se borra, el pedido queda, pero sin usuario asociado (historial)
+    FOREIGN KEY (store_id) REFERENCES Store(store_id) ON DELETE CASCADE -- Si la tienda se borra, se borran sus pedidos
+);
+
+-- 8. Tabla OrderItem (Ítem de Pedido)
+-- Relación 1:N con Order y Product.
+CREATE TABLE OrderItem (
+    item_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL, -- Corregido a INT
+    unit_price DECIMAL(10, 2) NOT NULL, -- Corregido a DECIMAL
+    FOREIGN KEY (order_id) REFERENCES `Order`(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Product(product_id) ON DELETE CASCADE
+);
+
+
+
