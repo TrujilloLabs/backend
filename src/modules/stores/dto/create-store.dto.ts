@@ -31,6 +31,18 @@ export class CreateStoreDto {
     @IsString({ message: 'La descripción debe ser una cadena de texto' })
     description?: string;
 
+    //email
+    @IsNotEmpty({ message: 'El email no puede estar vacío' })
+    @IsString({ message: 'El email debe ser una cadena de texto' })
+    @MaxLength(150, { message: 'El email no puede exceder los 150 caracteres' })
+    email: string;
+
+    //password
+    @IsNotEmpty({ message: 'La contraseña no puede estar vacía' })
+    @IsString({ message: 'La contraseña debe ser una cadena de texto' })
+    @MaxLength(150, { message: 'La contraseña no puede exceder los 150 caracteres' })
+    password: string;
+
     @IsOptional()
     @IsEnum(['activa', 'inactiva'], { message: 'El estado debe ser "activa" o "inactiva"' })
     state: 'activa' | 'inactiva';

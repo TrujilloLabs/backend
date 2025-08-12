@@ -17,6 +17,12 @@ export class Store {
     @Column({ type: 'text', nullable: true })
     description?: string;
 
+    @Column({ length: 150 })
+    email: string;
+
+    @Column({ length: 150 })
+    password: string;
+
     @Column({ type: 'enum', enum: ['activa', 'inactiva'], default: 'inactiva' })
     state: 'activa' | 'inactiva';
 
