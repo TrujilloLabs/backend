@@ -4,10 +4,9 @@ import { Store } from '../../stores/entities/store.entity';
 import { Role } from '../enums/user-role.enum';
 
 
-
 @Entity({ name: 'users' })
 export class User {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     user_id: number;
 
     @Column({ length: 250 })
