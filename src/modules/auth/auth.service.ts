@@ -5,13 +5,19 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateStoreDto } from '../stores/dto/create-store.dto';
 // import { AuthStore } from '../../../dist/interfaces/auth-store.interface';
 import { Store } from '../stores/entities/store.entity';
+import { User } from '../users/entities/user.entity';
+import { Role } from '../users/enums/user-role.enum';
+// import { async } from '../seed/seed-superadmin';
 
 
 
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly dataSource: DataSource) { }
+  constructor(
+    private readonly dataSource: DataSource
+
+  ) { }
 
 
   async authCreateStore(createStoreDto: CreateStoreDto) {
@@ -24,8 +30,19 @@ export class AuthService {
       password: createStoreDto.password,
       // state: (createStoreDto.state as 'activa' | 'inactiva') ?? 'inactiva', // Usa 'inactiva' si no viene en el DTO
     });
+
+    //crear usario con el email el password en name de store
+    const userRepo = this.dataSource.getRepository(User),
+      user = userRepo.create({
+        name: createStoreDto.name,
+        email: createStoreDto.email,
+        password: createStoreDto.password,
+        role: Role.ADMIN_TIENDA,
+      });
+
     const savedStore = await storeRepo.save(store);
-    return savedStore;
+    const savedUser = await this.dataSource.getRepository(User).save(user);
+
   }
 
   findAll() {

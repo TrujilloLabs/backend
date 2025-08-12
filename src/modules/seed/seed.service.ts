@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { User, UserRole } from '../../modules/users/entities/user.entity';
+import { User } from '../../modules/users/entities/user.entity';
+import { Role } from '../users/enums/user-role.enum';
 
 @Injectable()
 export class SeedService {
@@ -21,7 +22,7 @@ export class SeedService {
             name: 'Super Admin',
             email: process.env.SUPERADMIN_EMAIL || 'super@admin.local',
             password: hashed,
-            role: UserRole.SUPER_ADMIN,
+            role: Role.SUPER_ADMIN,
         });
         await repo.save(user);
         return { message: 'SuperAdmin creado', email: user.email };
