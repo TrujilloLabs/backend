@@ -43,6 +43,14 @@ export class CreateStoreDto {
     // @MaxLength(150, { message: 'La contraseña no puede exceder los 150 caracteres' })
     // password: string;
 
+    //el store_id
+    // @IsNotEmpty({ message: 'El ID de la tienda no puede estar vacío' })
+    // @IsString({ message: 'El ID de la tienda debe ser una cadena de texto' })
+    //que store_id se opcional
+    @IsOptional()
+    // @IsString({ message: 'El ID de la tienda debe ser una cadena de texto' })
+    store_id?: string;
+
     @IsOptional()
     @IsEnum(['activa', 'inactiva'], { message: 'El estado debe ser "activa" o "inactiva"' })
     state: 'activa' | 'inactiva';
