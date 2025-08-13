@@ -9,7 +9,6 @@ export class SeedService {
     constructor(private readonly dataSource: DataSource) { }
 
     async executeSeed() {
-        // Crear SuperAdmin si no existe
         const repo = this.dataSource.getRepository(User);
         const existing = await repo.findOne({ where: { email: process.env.SUPERADMIN_EMAIL } });
         if (existing) return { message: 'SuperAdmin ya existe', email: existing.email };
