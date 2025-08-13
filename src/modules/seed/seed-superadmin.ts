@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 // import { User, UserRole } from '../modules/users/user.entity';
 import { User } from '../../modules/users/entities/user.entity';
-import { Role } from '../users/enums/user-role.enum';
+import { Role } from '../../enums/user-role.enum';
 
 export async function seedSuperAdmin(dataSource: DataSource) {
     const repo = dataSource.getRepository(User);

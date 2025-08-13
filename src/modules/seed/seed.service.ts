@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../../modules/users/entities/user.entity';
-import { Role } from '../users/enums/user-role.enum';
+import { Role } from '../../enums/user-role.enum';
 
 @Injectable()
 export class SeedService {

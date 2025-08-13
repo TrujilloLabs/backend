@@ -1,7 +1,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Store } from '../../stores/entities/store.entity';
-import { Role } from '../enums/user-role.enum';
+import { Role } from '../../../enums/user-role.enum';
 
 
 @Entity({ name: 'users' })
