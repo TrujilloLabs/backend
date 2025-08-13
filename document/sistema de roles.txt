@@ -1,0 +1,612 @@
+// README.md
+// ¡Hola, Diego! Aquí tienes un sistema de roles y permisos completo para NestJS.
+// Este ejemplo incluye autenticación JWT, TypeORM para la base de datos (PostgreSQL), y un sistema
+// de autorización basado en Guards y decoradores para proteger tus rutas.
+
+// Este proyecto contiene los siguientes roles predefinidos:
+// - superAdmin: Rol con todos los permisos, puede gestionar roles y usuarios.
+// - adminTienda: Rol con permisos de gestión de su tienda, pero sin control global.
+// - usuario: Rol básico sin permisos de gestión.
+
+// Sigue estas instrucciones para configurar y ejecutar la aplicación.
+
+// Requisitos:
+// - Node.js y npm instalados.
+// - PostgreSQL instalado y en ejecución.
+
+// 1. Configuración del proyecto
+// Primero, crea un nuevo proyecto de NestJS o usa uno existente.
+// A continuación, instala las dependencias necesarias:
+// npm install @nestjs/typeorm typeorm @nestjs/passport passport passport-jwt @nestjs/jwt @nestjs/config pg bcryptjs class-transformer class-validator
+
+// 2. Configuración de la base de datos
+// Crea una base de datos PostgreSQL.
+// Luego, crea un archivo .env en la raíz del proyecto y añade las siguientes variables:
+/*
+# .env
+DB_TYPE=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=tu_usuario_de_postgres
+DB_PASSWORD=tu_contraseña_de_postgres
+DB_DATABASE=nombre_de_tu_db
+JWT_SECRET=tu_secreto_jwt
+*/
+
+// 3. Estructura de la aplicación
+// El siguiente código asume una estructura de carpetas típica de NestJS:
+// src/
+// ├── auth/
+// ├── roles/
+// │   ├── entities/
+// │   ├── guards/
+// │   └── decorators/
+// ├── users/
+// ├── app.module.ts
+// ├── main.ts
+
+// Copia y pega el código de cada archivo en su respectiva ubicación.
+// Asegúrate de que las rutas de importación sean correctas según tu estructura.
+
+// 4. Ejecutar la aplicación
+// Para iniciar el servidor:
+// npm run start:dev
+
+// 5. Endpoints de ejemplo
+// - POST /auth/login: Para autenticarse y obtener un JWT.
+// - POST /roles: Para que un superAdmin cree un nuevo rol.
+// - GET /roles: Para que un superAdmin vea todos los roles.
+// - PUT /roles/:id/permissions: Para que un superAdmin asigne permisos a un rol.
+// - GET /users/me: Ruta protegida que solo puede ser accedida por usuarios autenticados.
+
+// ---
+
+// src/auth/auth.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { JwtStrategy } from './jwt.strategy';
+import { User } from '../roles/entities/user.entity';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [AuthService, JwtStrategy],
+  controllers: [AuthController],
+  exports: [AuthService],
+})
+export class AuthModule {}
+
+
+// src/auth/auth.service.ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
+import { User } from '../roles/entities/user.entity';
+import { LoginDto } from './dto/login.dto';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+    private jwtService: JwtService,
+  ) {}
+
+  async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
+    const { username, password } = loginDto;
+    const user = await this.usersRepository.findOne({
+      where: { username },
+      relations: ['role', 'role.permissions'], // Carga el rol y sus permisos
+    });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    const payload = {
+      username: user.username,
+      sub: user.id,
+      role: user.role.name,
+      permissions: user.role.permissions.map(p => p.name),
+    };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+}
+
+// src/auth/auth.controller.ts
+import { Controller, Post, Body } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Post('login')
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
+  }
+}
+
+// src/auth/jwt.strategy.ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../roles/entities/user.entity';
+import { JwtPayload } from './jwt-payload.interface';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+    private configService: ConfigService,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.get<string>('JWT_SECRET'),
+    });
+  }
+
+  async validate(payload: JwtPayload): Promise<any> {
+    const { username } = payload;
+    const user = await this.usersRepository.findOne({
+      where: { username },
+      relations: ['role', 'role.permissions'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return user;
+  }
+}
+
+
+// src/roles/decorators/roles.decorator.ts
+import { SetMetadata } from '@nestjs/common';
+
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
+
+
+// src/roles/decorators/permissions.decorator.ts
+import { SetMetadata } from '@nestjs/common';
+
+export const PERMISSIONS_KEY = 'permissions';
+export const Permissions = (...permissions: string[]) =>
+  SetMetadata(PERMISSIONS_KEY, permissions);
+
+
+// src/roles/entities/permission.entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+} from 'typeorm';
+import { Role } from './role.entity';
+
+@Entity()
+export class Permission {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  name: string; // Ejemplo: 'crear_roles', 'editar_usuarios'
+
+  @Column()
+  description: string;
+
+  @ManyToMany(() => Role, (role) => role.permissions)
+  roles: Role[];
+}
+
+// src/roles/entities/role.entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
+import { User } from './user.entity';
+import { Permission } from './permission.entity';
+
+@Entity()
+export class Role {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  name: string; // Ejemplo: 'superAdmin', 'adminTienda', 'usuario'
+
+  @Column()
+  description: string;
+
+  @OneToMany(() => User, (user) => user.role)
+  users: User[];
+
+  @ManyToMany(() => Permission, (permission) => permission.roles)
+  @JoinTable()
+  permissions: Permission[];
+}
+
+// src/roles/entities/user.entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  BeforeInsert,
+} from 'typeorm';
+import * as bcrypt from 'bcryptjs';
+import { Role } from './role.entity';
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  username: string;
+
+  @Column()
+  password: string;
+
+  @ManyToOne(() => Role, (role) => role.users, { eager: true }) // Carga el rol automáticamente
+  role: Role;
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+}
+
+// src/roles/guards/roles.guard.ts
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { ROLES_KEY } from '../decorators/roles.decorator';
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (!requiredRoles) {
+      return true;
+    }
+
+    const { user } = context.switchToHttp().getRequest();
+    // Verifica si el rol del usuario está en la lista de roles requeridos
+    return requiredRoles.includes(user.role.name);
+  }
+}
+
+// src/roles/guards/permissions.guard.ts
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+
+@Injectable()
+export class PermissionsGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+      PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (!requiredPermissions) {
+      return true;
+    }
+
+    const { user } = context.switchToHttp().getRequest();
+    // El objeto de usuario tiene el rol y los permisos del token
+    const userPermissions = user.role.permissions.map(p => p.name);
+    // Verifica si el usuario tiene todos los permisos requeridos
+    return requiredPermissions.every((perm) =>
+      userPermissions.includes(perm),
+    );
+  }
+}
+
+// src/roles/roles.controller.ts
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Delete,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
+import { RolesService } from './roles.service';
+import { Role } from './entities/role.entity';
+import { Permission } from './entities/permission.entity';
+import { CreateRoleDto, AssignPermissionsDto } from './dto/role.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { PermissionsGuard } from './guards/permissions.guard';
+import { Roles } from './decorators/roles.decorator';
+import { Permissions } from './decorators/permissions.decorator';
+
+@Controller('roles')
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+export class RolesController {
+  constructor(private rolesService: RolesService) {}
+
+  // 1. Crear roles
+  @Post()
+  @Roles('superAdmin')
+  @Permissions('crear_roles')
+  async create(@Body() createRoleDto: CreateRoleDto): Promise<Role> {
+    return this.rolesService.createRole(createRoleDto);
+  }
+
+  // 2. Ver roles
+  @Get()
+  @Roles('superAdmin')
+  @Permissions('ver_roles')
+  async findAll(): Promise<Role[]> {
+    return this.rolesService.findAllRoles();
+  }
+
+  // 3. Eliminar rol
+  @Delete(':id')
+  @Roles('superAdmin')
+  @Permissions('eliminar_roles')
+  async remove(@Param('id') id: string) {
+    return this.rolesService.deleteRole(id);
+  }
+
+  // 4. Asignar permisos a un rol
+  @Put(':id/permissions')
+  @Roles('superAdmin')
+  @Permissions('asignar_permisos')
+  async assignPermissions(@Param('id') id: string, @Body() dto: AssignPermissionsDto) {
+    return this.rolesService.assignPermissionsToRole(id, dto.permissionIds);
+  }
+
+  // 5. Crear un permiso (usado por superAdmin)
+  @Post('permissions')
+  @Roles('superAdmin')
+  @Permissions('crear_permisos')
+  async createPermission(@Body() permission: Permission): Promise<Permission> {
+    return this.rolesService.createPermission(permission);
+  }
+}
+
+// src/roles/roles.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Role } from './entities/role.entity';
+import { Permission } from './entities/permission.entity';
+import { CreateRoleDto } from './dto/role.dto';
+
+@Injectable()
+export class RolesService {
+  constructor(
+    @InjectRepository(Role)
+    private rolesRepository: Repository<Role>,
+    @InjectRepository(Permission)
+    private permissionsRepository: Repository<Permission>,
+  ) {}
+
+  // Crear un nuevo rol
+  async createRole(createRoleDto: CreateRoleDto): Promise<Role> {
+    const newRole = this.rolesRepository.create(createRoleDto);
+    return this.rolesRepository.save(newRole);
+  }
+
+  // Obtener todos los roles
+  async findAllRoles(): Promise<Role[]> {
+    return this.rolesRepository.find({ relations: ['permissions'] });
+  }
+
+  // Eliminar un rol
+  async deleteRole(id: string): Promise<void> {
+    await this.rolesRepository.delete(id);
+  }
+
+  // Crear un nuevo permiso
+  async createPermission(permission: Permission): Promise<Permission> {
+    const newPermission = this.permissionsRepository.create(permission);
+    return this.permissionsRepository.save(newPermission);
+  }
+
+  // Asignar permisos a un rol
+  async assignPermissionsToRole(roleId: string, permissionIds: string[]): Promise<Role> {
+    const role = await this.rolesRepository.findOne({
+      where: { id: roleId },
+      relations: ['permissions'],
+    });
+    if (!role) {
+      throw new NotFoundException('Rol no encontrado');
+    }
+
+    const permissions = await this.permissionsRepository.findByIds(
+      permissionIds,
+    );
+    role.permissions = permissions;
+    return this.rolesRepository.save(role);
+  }
+}
+
+
+// src/roles/roles.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RolesService } from './roles.service';
+import { RolesController } from './roles.controller';
+import { Role } from './entities/role.entity';
+import { User } from './entities/user.entity';
+import { Permission } from './entities/permission.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Role, User, Permission])],
+  controllers: [RolesController],
+  providers: [RolesService],
+})
+export class RolesModule {}
+
+
+// src/app.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { RolesModule } from './roles/roles.module';
+import { UsersModule } from './users/users.module';
+import { User } from './roles/entities/user.entity';
+import { Role } from './roles/entities/role.entity';
+import { Permission } from './roles/entities/permission.entity';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [User, Role, Permission],
+        synchronize: true, // ¡Advertencia! No usar en producción.
+      }),
+      inject: [ConfigService],
+    }),
+    AuthModule,
+    RolesModule,
+    UsersModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+// src/users/users.controller.ts
+import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/user.dto';
+import { User } from '../roles/entities/user.entity';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../roles/decorators/roles.decorator';
+import { RolesGuard } from '../roles/guards/roles.guard';
+
+@Controller('users')
+export class UsersController {
+  constructor(private usersService: UsersService) {}
+
+  @Post()
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.usersService.createUser(createUserDto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Req() req) {
+    // Retorna el usuario autenticado. El guard JWT adjunta el usuario al objeto 'req'
+    return req.user;
+  }
+
+  // Ejemplo de ruta protegida para un superAdmin
+  @Get('protected')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('superAdmin')
+  getAdminData() {
+    return { message: 'Bienvenido, superAdmin!' };
+  }
+}
+
+// src/users/users.service.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../roles/entities/user.entity';
+import { Role } from '../roles/entities/role.entity';
+import { CreateUserDto } from './dto/user.dto';
+
+@Injectable()
+export class UsersService {
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+    @InjectRepository(Role)
+    private rolesRepository: Repository<Role>,
+  ) {}
+
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const { username, password, roleName } = createUserDto;
+
+    // Busca el rol por su nombre. Asume que el rol ya existe.
+    const role = await this.rolesRepository.findOne({ where: { name: roleName } });
+    if (!role) {
+      throw new Error(`El rol ${roleName} no existe`);
+    }
+
+    const newUser = this.usersRepository.create({
+      username,
+      password,
+      role,
+    });
+
+    return this.usersRepository.save(newUser);
+  }
+}
+
+
+// src/main.ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  await app.listen(3000);
+}
+bootstrap();
