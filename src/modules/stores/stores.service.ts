@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Store } from './entities/store.entity';
 import { User } from '../users/entities/user.entity';
 import { License } from '../lincese/entities/lincese.entity';
@@ -9,7 +9,10 @@ import { UpdateStoreDto } from './dto/update-store.dto';
 @Injectable()
 export class StoresService {
 
-  constructor(private DataSource: DataSource) { }
+  constructor(private storeModel: DataSource) {
+
+
+  }
 
   async createStoreWithAdmin(createStore, createUser) {
 
@@ -17,28 +20,50 @@ export class StoresService {
 
 
   async create(createStoreDto: CreateStoreDto) {
-    const storeRepo = this.DataSource.getRepository(Store);
-    const store = storeRepo.create({
-      name: createStoreDto.name,
-      logo_url: createStoreDto.logo_url,
-      description: createStoreDto.description,
-      state: (createStoreDto.state as 'activa' | 'inactiva') ?? 'inactiva', // Usa 'inactiva' si no viene en el DTO
-    });
-    const savedStore = await storeRepo.save(store);
-    return savedStore;
+    // const storeRepo = this.DataSource.getRepository(Store);
+    // const store = storeRepo.create({
+    //   name: createStoreDto.name,
+    //   logo_url: createStoreDto.logo_url,
+    //   description: createStoreDto.description,
+    //   state: (createStoreDto.state as 'activa' | 'inactiva') ?? 'inactiva', // Usa 'inactiva' si no viene en el DTO
+    // });
+    // const savedStore = await storeRepo.save(store);
+    // return savedStore;
   }
   // ...existing code...
 
-  findAll() {
-    return `This action returns all stores`;
+  async findAll(): Promise<Store[]> {
+    const storeRepo = this.storeModel.getRepository(Store);
+    return await storeRepo.find(
+      {
+        relations: {
+          users: true,
+          // licenses: true,
+        },
+      }
+    );
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} store`;
+
+  async findOne(id: string): Promise<Store | null> {
+    try {
+      const storeRepo = this.storeModel.getRepository(Store);
+      return storeRepo.findOne({
+        where: { store_id: id },
+        relations: {
+          users: true,
+          // licenses: true,
+        },
+      });
+    } catch (error) {
+      console.error('Error finding store:', error);
+      throw new Error('Store not found');
+    }
+
   }
 
   update(id: number, updateStoreDto: UpdateStoreDto) {
-    return `This action updates a #${id} store`;
+    return `This action updates a #${id} store Trujillo`;
   }
 
   remove(id: number) {
