@@ -62,7 +62,7 @@ export class StoresService {
     return store;
   }
 
-  // PATCH - Actualizar store
+
   async update(id: string, updateStoreDto: UpdateStoreDto): Promise<Store> {
     const storeRepo = this.storeModel.getRepository(Store);
     const store = await storeRepo.findOne({ where: { store_id: id } });
