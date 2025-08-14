@@ -1,7 +1,8 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 // import { User, UserRole } from '../modules/users/user.entity';
-import { User, UserRole } from '../../modules/users/entities/user.entity';
+import { User } from '../../modules/users/entities/user.entity';
+import { Role } from '../../enums/user-role.enum';
 
 export async function seedSuperAdmin(dataSource: DataSource) {
     const repo = dataSource.getRepository(User);
@@ -13,7 +14,7 @@ export async function seedSuperAdmin(dataSource: DataSource) {
         name: 'Super Admin',
         email: process.env.SUPERADMIN_EMAIL || 'super@admin.local',
         password: hashed,
-        role: UserRole.SUPER_ADMIN,
+        role: Role.SUPER_ADMIN,
     });
     await repo.save(user);
     console.log('SuperAdmin creado:', user.email);
