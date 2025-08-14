@@ -62,8 +62,17 @@ export class StoresService {
     return store;
   }
 
-  update(id: number, updateStoreDto: UpdateStoreDto) {
-    return `This action updates a #${id} store Trujillo`;
+  // PATCH - Actualizar store
+  async update(id: string, updateStoreDto: UpdateStoreDto): Promise<Store> {
+    const storeRepo = this.storeModel.getRepository(Store);
+    const store = await storeRepo.findOne({ where: { store_id: id } });
+
+    if (!store) {
+      throw new NotFoundException(`Store con ID ${id} no encontrada`);
+    }
+
+    Object.assign(store, updateStoreDto);
+    return await storeRepo.save(store);
   }
 
   remove(id: number) {
