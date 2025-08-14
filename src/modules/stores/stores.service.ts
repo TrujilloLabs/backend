@@ -34,7 +34,7 @@ export class StoresService {
 
   async findAll(): Promise<Store[]> {
     const storeRepo = this.storeModel.getRepository(Store);
-    return await storeRepo.find(
+    const store = await storeRepo.find(
       {
         relations: {
           users: true,
@@ -42,6 +42,11 @@ export class StoresService {
         },
       }
     );
+
+    if (!store || store.length === 0) {
+      throw new NotFoundException('No stores found');
+    }
+    return store;
   }
 
 
@@ -75,7 +80,14 @@ export class StoresService {
     return await storeRepo.save(store);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} store`;
+  async remove(id: string): Promise<{ message: string }> {
+    const storeRepo = this.storeModel.getRepository(Store);
+    const store = await storeRepo.findOne({ where: { store_id: id } });
+
+    if (store) {
+      await storeRepo.remove(store);
+      return { message: 'Store deleted successfully' };
+    }
+    return { message: 'Store not found' };
   }
 }
