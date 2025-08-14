@@ -23,5 +23,12 @@ export class AuthController {
     return this.authService.authCreateStore(createStoreDto);
   }
 
+  @Post('login')
+  async login(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.login(email, password);
+  }
 
 }
