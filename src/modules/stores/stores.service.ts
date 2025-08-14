@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Store } from './entities/store.entity';
 import { User } from '../users/entities/user.entity';
@@ -46,20 +46,20 @@ export class StoresService {
 
 
   async findOne(id: string): Promise<Store | null> {
-    try {
-      const storeRepo = this.storeModel.getRepository(Store);
-      return storeRepo.findOne({
-        where: { store_id: id },
-        relations: {
-          users: true,
-          // licenses: true,
-        },
-      });
-    } catch (error) {
-      console.error('Error finding store:', error);
-      throw new Error('Store not found');
-    }
 
+    const storeRepo = this.storeModel.getRepository(Store);
+    const store = await storeRepo.findOne({
+      where: { store_id: id },
+      relations: {
+        users: true,
+        // licenses: true,
+      },
+    });
+
+    if (!store) {
+      throw new NotFoundException(`Store con ID ${id} no encontrada`);
+    }
+    return store;
   }
 
   update(id: number, updateStoreDto: UpdateStoreDto) {
