@@ -6,7 +6,7 @@ import { License } from '../../lincese/entities/lincese.entity';
 @Entity({ name: 'stores' })
 export class Store {
     @PrimaryGeneratedColumn('uuid')
-    store_id: number;
+    store_id: string;
 
     @Column({ length: 150 })
     name: string;
