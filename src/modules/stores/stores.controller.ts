@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 
 @Controller('stores')
 export class StoresController {
-  constructor(private readonly storesService: StoresService) {}
+  constructor(private readonly storesService: StoresService) { }
 
   @Post()
   create(@Body() createStoreDto: CreateStoreDto) {
@@ -18,17 +18,23 @@ export class StoresController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.storesService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const store = await this.storesService.findOne(id);
+    if (!store) throw new NotFoundException('Store not found');
+    return store;
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
-    return this.storesService.update(+id, updateStoreDto);
+  async update(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
+    const updated = await this.storesService.update(id, updateStoreDto);
+    if (!updated) throw new NotFoundException('Store not found');
+    return updated;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.storesService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const deleted = await this.storesService.remove(id);
+    if (!deleted) throw new NotFoundException('Store not found');
+    return { message: 'Store deleted successfully' };
   }
 }
