@@ -32,7 +32,9 @@ export class StoresController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.storesService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const deleted = await this.storesService.remove(id);
+    if (!deleted) throw new NotFoundException('Store not found');
+    return { message: 'Store deleted successfully' };
   }
 }
