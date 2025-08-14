@@ -25,8 +25,10 @@ export class StoresController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
-    return this.storesService.update(+id, updateStoreDto);
+  async update(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
+    const updated = await this.storesService.update(id, updateStoreDto);
+    if (!updated) throw new NotFoundException('Store not found');
+    return updated;
   }
 
   @Delete(':id')
