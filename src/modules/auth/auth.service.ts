@@ -6,10 +6,17 @@ import { CreateStoreDto } from '../stores/dto/create-store.dto';
 import { Store } from '../stores/entities/store.entity';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../../enums/user-role.enum';
+import { IUser } from 'src/interfaces/User.interface';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly dataSource: DataSource) { }
+  constructor(private readonly dataSource: DataSource,
+    private readonly usersService: UsersService
+  ) {
+    this.usersService = new UsersService();
+
+  }
 
   async authCreateStore(createStoreDto: CreateStoreDto) {
     const generatedPassword = this.generateRandomPassword();
@@ -64,7 +71,28 @@ export class AuthService {
     return Math.random().toString(36).slice(-length);
   }
 
-  async login(email: string, password: string) {
+  async login(
+    email: string,
+    password: string): Promise<IUser> {
+
+    const user = await this.usersService.findByEmail(email);
+
+
+    console.log(user);
+
+    return {
+      user_id: 'uuid-generado',
+      name: 'Usuario de prueba',
+      email,
+      password,
+      telephone: '123456789',
+      address: 'Calle Falsa 123',
+      registration_date: new Date(),
+      role: Role.CLIENTE,
+      store: undefined
+    };
+
+
 
   }
 
