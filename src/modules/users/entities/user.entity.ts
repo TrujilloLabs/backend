@@ -28,7 +28,7 @@ export class User {
     registration_date: Date;
 
     //role no defecto
-    @Column({ type: 'enum', enum: Role })
+    @Column({ type: 'enum', enum: Role, default: Role.CLIENTE })
     role: Role;
 
     // Cliente y admin_tienda deben tener store obligatorio
