@@ -53,8 +53,21 @@ export class UsersService {
 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string, storeId: string): Promise<User> {
+
+    //Validar la el id de la tienda si existe 
+    const storeValidate = await this.storesService.findOne(storeId);
+
+    const user = await this.userModel.getRepository(User)
+      .createQueryBuilder('user')  // esta linea lo que hace es que crea una consulta para buscar un usuario
+      .leftJoinAndSelect('user.store', 'store') // esta linea lo que hace es que une la tabla de usuarios con la tabla de tiendas
+      .where('user.user_id = :id', { id })     // esta linea lo que hace es que busca un usuario por su id
+      .andWhere('user.store = :storeId', { storeId })   // esta linea lo que hace es que busca un usuario por su id de tienda OSEA que al buscar el id de tienda valida que exista el usuario
+      .getOne();
+
+    if (!user) throw new NotFoundException(`User with id ${id} not found in store ${storeId}`);
+    return user;
+
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
