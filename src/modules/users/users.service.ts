@@ -6,13 +6,15 @@ import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { StoresService } from '../stores/stores.service';
 
 
 @Injectable()
 export class UsersService {
 
   constructor(
-    private userModel: DataSource) {
+    private userModel: DataSource,
+    private storesService: StoresService) {
   }
 
 
@@ -20,8 +22,6 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto, storeId: string) {
     // const hashedPass = await bcrypt.hash(createUserDto.password, 10);
-
-
 
     const user = this.userModel.getRepository(User).create({
       ...createUserDto,
@@ -34,8 +34,23 @@ export class UsersService {
     return user;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(storeId: string) {
+
+    //Validar la el id de la tienda si existe 
+    const storeValidate = await this.storesService.findOne(storeId);
+    if (!storeValidate) {
+      throw new NotFoundException(`Store with id ${storeId} not found`);
+    }
+    const userRepo = this.userModel.getRepository(User);
+    const user = await userRepo.find({
+      relations: ['store']
+    });
+
+    if (!user) throw new NotFoundException(`No users found for store ${storeId}`);
+
+    return user;
+
+
   }
 
   findOne(id: number) {
