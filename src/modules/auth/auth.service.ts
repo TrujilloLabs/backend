@@ -1,20 +1,24 @@
-import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
 
-import { CreateStoreDto } from '../stores/dto/create-store.dto';
+import { UsersService } from '../users/users.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { Store } from '../stores/entities/store.entity';
 import { User } from '../users/entities/user.entity';
-import { Role } from '../../enums/user-role.enum';
 import { IUser } from 'src/interfaces/User.interface';
-import { UsersService } from '../users/users.service';
-
+import { LoginDto } from './dto/login.dto';
+import { CreateStoreDto } from '../stores/dto/create-store.dto';
+import { Role } from '../../enums/user-role.enum';
 @Injectable()
 export class AuthService {
   constructor(private readonly dataSource: DataSource,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+    private jwt: JwtService
   ) {
-    this.usersService = new UsersService();
+    // this.usersService = new UsersService();
 
   }
 
@@ -32,14 +36,16 @@ export class AuthService {
         logo_url: createStoreDto.logo_url,
         description: createStoreDto.description,
         email: createStoreDto.email,
-        password: hashedPassword,
+        password: generatedPassword,
+        // password: hashedPassword,
       });
       const saveStore = await queryRunner.manager.save(store);
 
       const user = queryRunner.manager.create(User, {
         name: createStoreDto.name,
         email: createStoreDto.email,
-        password: hashedPassword,
+        // password: hashedPassword,
+        password: generatedPassword,
         role: Role.ADMIN_TIENDA,
         store: { store_id: saveStore.store_id }
       });
@@ -73,27 +79,21 @@ export class AuthService {
 
   async login(
     email: string,
-    password: string): Promise<IUser> {
+    password: string) {
 
     const user = await this.usersService.findByEmail(email);
+    if (!user) throw new UnauthorizedException('Invalid credentials');
 
+    // const isPasswordValid = await bcrypt.compare(password, user.password);
+    // if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
 
-    console.log(user);
+    if (password !== user.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
-    return {
-      user_id: 'uuid-generado',
-      name: 'Usuario de prueba',
-      email,
-      password,
-      telephone: '123456789',
-      address: 'Calle Falsa 123',
-      registration_date: new Date(),
-      role: Role.CLIENTE,
-      store: undefined
-    };
-
-
-
+    const payload = { sub: user.user_id, email: user.email, role: user.role, store_id: user.store?.store_id ?? null };
+    console.log(payload);
+    return { access_token: this.jwtService.sign(payload) };
   }
 
 
