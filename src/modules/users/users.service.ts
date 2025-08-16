@@ -39,18 +39,27 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.userModel.getRepository(User).findOne({ where: { email } });
+
+
+    const user = await this.userModel.getRepository(User).findOne({ where: { email }, relations: ['store'] });
+
     if (!user) throw new NotFoundException(`User with email ${email} not found`);
-    return {
-      user_id: user.user_id,
-      name: user.name,
-      email: user.email,
-      password: user.password,
-      telephone: user.telephone,
-      address: user.address,
-      registration_date: user.registration_date,
-      role: user.role,
-      store: user.store
-    };
+    return user;
   }
+
+
+  //  const user = await this.userModel.getRepository(User).findOne({ where: { email } });
+  //   if (!user) throw new NotFoundException(`User with email ${email} not found`);
+  //   return {
+  //     user_id: user.user_id,
+  //     name: user.name,
+  //     email: user.email,
+  //     password: user.password,
+  //     telephone: user.telephone,
+  //     address: user.address,
+  //     registration_date: user.registration_date,
+  //     role: user.role,
+  //     store: user.store
+  //   };
+  // }
 }
