@@ -1,9 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, UseGuards } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Role } from 'src/enums/user-role.enum';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('stores')
+@UseGuards(JwtAuthGuard)
 export class StoresController {
   constructor(private readonly storesService: StoresService) { }
 
@@ -12,6 +17,8 @@ export class StoresController {
     return this.storesService.create(createStoreDto);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
   @Get()
   findAll() {
     return this.storesService.findAll();
