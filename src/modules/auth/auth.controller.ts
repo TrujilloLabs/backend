@@ -5,6 +5,8 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateStoreDto } from '../stores/dto/create-store.dto';
 import { AuthStore } from 'src/interfaces/auth-store.interface';
 import * as RequestWithUserInterface from 'src/interfaces/RequestWithUser.interface';
+import { AuthGuard } from '@nestjs/passport';
+import { Role } from 'src/enums/user-role.enum';
 // import { Request } from 'express';
 
 
@@ -14,7 +16,7 @@ export class AuthController {
 
   @Post()
   // @UseGuards(AuthGuard, RolesGuard)
-  //  @Roles(UserRole.SUPER_ADMIN) // Solo el SUPER_ADMIN puede crear tiendas
+  //  @Roles(Role.SUPER_ADMIN) // Solo el SUPER_ADMIN puede crear tiendas
   async createStore(
     @Body() createStoreDto: CreateStoreDto,
     // @Req() req: RequestWithUserInterface.RequestWithUser,
