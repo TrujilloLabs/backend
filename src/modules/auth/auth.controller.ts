@@ -7,6 +7,7 @@ import { AuthStore } from 'src/interfaces/auth-store.interface';
 import * as RequestWithUserInterface from 'src/interfaces/RequestWithUser.interface';
 import { AuthGuard } from '@nestjs/passport';
 import { Role } from 'src/enums/user-role.enum';
+import { LoginDto } from './dto/login.dto';
 // import { Request } from 'express';
 
 
@@ -26,11 +27,8 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(
-    @Body('email') email: string,
-    @Body('password') password: string,
-  ) {
-    return this.authService.login(email, password);
+  async login(dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
 }
