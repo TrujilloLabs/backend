@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcryptjs';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,8 +18,20 @@ export class UsersService {
 
 
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto, storeId: string) {
+    // const hashedPass = await bcrypt.hash(createUserDto.password, 10);
+
+
+
+    const user = this.userModel.getRepository(User).create({
+      ...createUserDto,
+      password: createUserDto.password, // Assuming password is already hashed
+      store: { store_id: storeId }
+    });
+
+    await this.userModel.getRepository(User).save(user);
+
+    return user;
   }
 
   findAll() {
@@ -48,18 +61,5 @@ export class UsersService {
   }
 
 
-  //  const user = await this.userModel.getRepository(User).findOne({ where: { email } });
-  //   if (!user) throw new NotFoundException(`User with email ${email} not found`);
-  //   return {
-  //     user_id: user.user_id,
-  //     name: user.name,
-  //     email: user.email,
-  //     password: user.password,
-  //     telephone: user.telephone,
-  //     address: user.address,
-  //     registration_date: user.registration_date,
-  //     role: user.role,
-  //     store: user.store
-  //   };
-  // }
+
 }
