@@ -11,4 +11,5 @@ export interface IUser {
     registration_date: Date;
     role: Role;
     store?: Store;
+    // access_token?: string;
 }
