@@ -27,18 +27,24 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Req() req) {
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  findOne(@Param('id') userId: string, @Req() req) {
     const storeId = req.user.store_id;
-    return this.usersService.findOne(id, storeId);
+    return this.usersService.findOne(userId, storeId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  update(@Param('id') userId: string, @Body() dto: UpdateUserDto, @Req() req) {
+    const storeId = req.user.store_id;
+    return this.usersService.userToUpdate(userId, dto, storeId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  remove(@Param('id') userId: string, @Req() req) {
+    const storeId = req.user.store_id;
+    return this.usersService.userToRemove(userId, storeId);
   }
 }
