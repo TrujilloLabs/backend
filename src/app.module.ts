@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { LinceseModule } from './modules/lincese/lincese.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { ProductResolver } from './modules/product/product.resolver';
+import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductModule } from './modules/product/product.module';
 import { ProductResolver } from './modules/product/product.resolver';
 @Module({
@@ -37,7 +38,9 @@ import { ProductResolver } from './modules/product/product.resolver';
 
   SeedModule,
 
-  ProductModule
+  ProductModule,
+
+  CategoriesModule
   ],
   providers: [ProductResolver],
   // controllers: [AppController],
