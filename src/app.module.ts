@@ -9,6 +9,9 @@ import { StoresModule } from './modules/stores/stores.module';
 import { UsersModule } from './modules/users/users.module';
 import { LinceseModule } from './modules/lincese/lincese.module';
 import { SeedModule } from './modules/seed/seed.module';
+import { ProductResolver } from './modules/product/product.resolver';
+import { ProductModule } from './modules/product/product.module';
+import { ProductResolver } from './modules/product/product.resolver';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, }),
 
@@ -32,8 +35,11 @@ import { SeedModule } from './modules/seed/seed.module';
 
   LinceseModule,
 
-  SeedModule
+  SeedModule,
+
+  ProductModule
   ],
+  providers: [ProductResolver],
   // controllers: [AppController],
   // providers: [AppService],
 })
