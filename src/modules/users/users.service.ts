@@ -33,16 +33,14 @@ export class UsersService {
 
   async findAll(storeId: string) {
 
-    //!ERROR validar que los usuarios listados pertenescan a la tienda logueada
-
-    //Validar la el id de la tienda si existe 
     const storeValidate = await this.storesService.findOne(storeId);
     if (!storeValidate) {
       throw new NotFoundException(`Store with id ${storeId} not found`);
     }
     const userRepo = this.userModel.getRepository(User);
     const user = await userRepo.find({
-      relations: ['store']
+      where: { store: { store_id: storeId } },
+      // relations: ['store']
     });
 
     if (!user) throw new NotFoundException(`No users found for store ${storeId}`);
@@ -59,7 +57,7 @@ export class UsersService {
 
     const user = await this.userModel.getRepository(User)
       .createQueryBuilder('user')  // esta linea lo que hace es que crea una consulta para buscar un usuario
-      .leftJoinAndSelect('user.store', 'store') // esta linea lo que hace es que une la tabla de usuarios con la tabla de tiendas
+      // .leftJoinAndSelect('user.store', 'store') // esta linea lo que hace es que une la tabla de usuarios con la tabla de tiendas
       .where('user.user_id = :id', { id })     // esta linea lo que hace es que busca un usuario por su id
       .andWhere('user.store = :storeId', { storeId })   // esta linea lo que hace es que busca un usuario por su id de tienda OSEA que al buscar el id de tienda valida que exista el usuario
       .getOne();
