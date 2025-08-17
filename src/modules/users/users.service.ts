@@ -46,8 +46,6 @@ export class UsersService {
     if (!user) throw new NotFoundException(`No users found for store ${storeId}`);
 
     return user;
-
-
   }
 
   async findOne(id: string, storeId: string): Promise<User> {
