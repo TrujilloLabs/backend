@@ -9,6 +9,8 @@ import { Store } from './entities/store.entity';
   providers: [StoresService],
   imports: [
     TypeOrmModule.forFeature([Store]),
-  ]
+
+  ],
+  exports: [StoresService],
 })
 export class StoresModule { }

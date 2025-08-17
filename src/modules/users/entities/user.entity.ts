@@ -7,7 +7,7 @@ import { Role } from '../../../enums/user-role.enum';
 @Entity({ name: 'users' })
 export class User {
     @PrimaryGeneratedColumn('uuid')
-    user_id: number;
+    user_id: string;
 
     @Column({ length: 250 })
     name: string;
@@ -28,7 +28,7 @@ export class User {
     registration_date: Date;
 
     //role no defecto
-    @Column({ type: 'enum', enum: Role })
+    @Column({ type: 'enum', enum: Role, default: Role.CLIENTE })
     role: Role;
 
     // Cliente y admin_tienda deben tener store obligatorio

@@ -1,15 +1,26 @@
-import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
 
-import { CreateStoreDto } from '../stores/dto/create-store.dto';
+import { UsersService } from '../users/users.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { Store } from '../stores/entities/store.entity';
 import { User } from '../users/entities/user.entity';
+import { IUser } from 'src/interfaces/User.interface';
+import { LoginDto } from './dto/login.dto';
+import { CreateStoreDto } from '../stores/dto/create-store.dto';
 import { Role } from '../../enums/user-role.enum';
-
 @Injectable()
 export class AuthService {
-  constructor(private readonly dataSource: DataSource) { }
+  constructor(private readonly dataSource: DataSource,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+    private jwt: JwtService
+  ) {
+    // this.usersService = new UsersService();
+
+  }
 
   async authCreateStore(createStoreDto: CreateStoreDto) {
     const generatedPassword = this.generateRandomPassword();
@@ -25,14 +36,16 @@ export class AuthService {
         logo_url: createStoreDto.logo_url,
         description: createStoreDto.description,
         email: createStoreDto.email,
-        password: hashedPassword,
+        password: generatedPassword,
+        // password: hashedPassword,
       });
       const saveStore = await queryRunner.manager.save(store);
 
       const user = queryRunner.manager.create(User, {
         name: createStoreDto.name,
         email: createStoreDto.email,
-        password: hashedPassword,
+        // password: hashedPassword,
+        password: generatedPassword,
         role: Role.ADMIN_TIENDA,
         store: { store_id: saveStore.store_id }
       });
@@ -64,21 +77,28 @@ export class AuthService {
     return Math.random().toString(36).slice(-length);
   }
 
+  async login(
+    dto: LoginDto): Promise<{ access_token: string }> {
 
+    const user = await this.usersService.findByEmail(dto.email);
+    if (!user) throw new UnauthorizedException('Invalid credentials');
 
-  findAll() {
-    return `This action returns all auth`;
+    // const isPasswordValid = await bcrypt.compare(password, user.password);
+    // if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+
+    if (dto.password !== user.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = { sub: user.user_id, email: user.email, role: user.role, store_id: user.store?.store_id ?? null };
+    console.log(payload);
+    return { access_token: this.jwtService.sign(payload) };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
 
-  // update(id: number, updateAuthDto: UpdateAuthDto) {
-  //   return `This action updates a #${id} auth`;
-  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+
+
+
+
 }

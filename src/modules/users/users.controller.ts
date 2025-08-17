@@ -1,34 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { Role } from 'src/enums/user-role.enum';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Body() dto: CreateUserDto, @Req() req) {
+    const storeId = req.user.store_id;
+    return this.usersService.create(dto, storeId);
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  findAll(@Req() req) {
+    const storeId = req.user.store_id;
+    return this.usersService.findAll(storeId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  findOne(@Param('id') userId: string, @Req() req) {
+    const storeId = req.user.store_id;
+    return this.usersService.findOne(userId, storeId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  update(@Param('id') userId: string, @Body() dto: UpdateUserDto, @Req() req) {
+    const storeId = req.user.store_id;
+    return this.usersService.userToUpdate(userId, dto, storeId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  remove(@Param('id') userId: string, @Req() req) {
+    const storeId = req.user.store_id;
+    return this.usersService.userToRemove(userId, storeId);
   }
 }
