@@ -17,9 +17,6 @@ export class UsersService {
     private storesService: StoresService) {
   }
 
-
-
-
   async create(createUserDto: CreateUserDto, storeId: string) {
     // const hashedPass = await bcrypt.hash(createUserDto.password, 10);
 
@@ -35,6 +32,8 @@ export class UsersService {
   }
 
   async findAll(storeId: string) {
+
+    //!ERROR validar que los usuarios listados pertenescan a la tienda logueada
 
     //Validar la el id de la tienda si existe 
     const storeValidate = await this.storesService.findOne(storeId);
@@ -70,20 +69,45 @@ export class UsersService {
 
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async userToUpdate(userId, updateUserDto: UpdateUserDto, storeId: string): Promise<User> {
+    const storeValidate = await this.storesService.findOne(storeId);
+    if (!storeValidate) {
+      throw new NotFoundException(`Store with id ${storeId} not found`);
+    }
+    const userToUpdate = await this.userModel.getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.store', 'store')
+      .where('user.user_id = :id', { id: userId })
+      .andWhere('user.store = :storeId', { storeId })
+      .getOne();
+
+    if (!userToUpdate) throw new NotFoundException(`User with id ${userId} not found in store ${storeId}`);
+
+    const updatedUser = Object.assign(userToUpdate, updateUserDto);
+
+    return this.userModel.getRepository(User).save(updatedUser);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async userToRemove(userId: string, storeId: string): Promise<void> {
+    const storeValidate = await this.storesService.findOne(storeId);
+    if (!storeValidate) {
+      throw new NotFoundException(`Store with id ${storeId} not found`);
+    }
+
+    const userToRemove = await this.userModel.getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoin('user.store', 'store') // No necesitamos seleccionar la tienda, solo la unimos para el filtro
+      .where('user.user_id = :userId', { userId })
+      .andWhere('store.store_id = :storeId', { storeId })
+      .getOne();
+
+    if (!userToRemove) throw new NotFoundException(`User with id ${userId} not found in store ${storeId}`);
+    await this.userModel.getRepository(User).remove(userToRemove);
 
   }
 
   async findByEmail(email: string): Promise<User | null> {
-
-
     const user = await this.userModel.getRepository(User).findOne({ where: { email }, relations: ['store'] });
-
     if (!user) throw new NotFoundException(`User with email ${email} not found`);
     return user;
   }
