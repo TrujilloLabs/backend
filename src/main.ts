@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { seedSuperAdmin } from './modules/seed/seed-superadmin';
 import { DataSource } from 'typeorm';
+import { AllExceptionsFilter } from './filter/http-exception.filter';
 
 // async function bootstrap() {
 //   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,7 @@ async function bootstrap() {
     })
   )
 
+  app.useGlobalFilters(new AllExceptionsFilter());
 
 
   const port = process.env.PORT ?? 3000;
