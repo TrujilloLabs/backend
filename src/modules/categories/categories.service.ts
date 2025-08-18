@@ -3,7 +3,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
-import { QueryFailedError, Repository } from 'typeorm';
+import { IsNull, Not, QueryFailedError, Repository } from 'typeorm';
 import { ParentCategoryFinder } from './parent-category.finder';
 import { ICategory } from 'src/interfaces/category.interface';
 import { ParentCategoryValidatorService } from './parent-category.validator';
@@ -86,6 +86,20 @@ export class CategoriesService {
     return this.safeDeleteCategory(categoryId);
   }
 
+  //Para restaurar categorías eliminadas:
+
+  async restoreCategory(categoryId: string, storeId: string): Promise<void> {
+    // await this.categoryValidator.validateCategoryOwnership(categoryId, storeId);
+
+    const result = await this.categoryRepo.restore({
+      id: categoryId,
+      store: storeId
+    });
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Category ${categoryId} not found or already active`);
+    }
+  }
 
 
   // TODO: METODOS EXTRAS
@@ -125,7 +139,8 @@ export class CategoriesService {
     return this.categoryRepo.find({
       where: {
         isVisible: true,
-        store: storeId
+        store: storeId,
+        // deletedAt: null(), // Ensure we only get non-deleted categories
       },
       relations: ['parentCategory'],
     });
@@ -197,7 +212,8 @@ export class CategoriesService {
 
   private async safeDeleteCategory(categoryId: string): Promise<DeleteResult> {
     try {
-      return await this.categoryRepo.delete(categoryId);
+      return await this.categoryRepo.softDelete(categoryId);
+      // return await this.categoryRepo.delete(categoryId);
     } catch (error) {
       this.handleDeleteError(error, categoryId);
     }
