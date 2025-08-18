@@ -13,8 +13,7 @@ import {
 } from 'class-validator';
 import { PartialType, ApiProperty } from '@nestjs/swagger';
 
-// --- DTO para crear un nuevo producto ---
-// Este DTO define las validaciones para los datos obligatorios al crear un producto.
+
 export class CreateProductDto {
     @ApiProperty({ maxLength: 150, example: 'Smartphone X' })
     @IsNotEmpty({ message: 'El nombre no puede estar vacío' })
@@ -55,15 +54,15 @@ export class CreateProductDto {
     priceUsd?: number | null;
 
     @ApiProperty({ required: false, example: 'https://example.com/image.jpg' })
-    @IsOptional()
     @IsString({ message: 'La URL de la imagen debe ser una cadena de texto' })
     @IsUrl({}, { message: 'La URL de la imagen debe ser una URL válida' })
     @MaxLength(500, { message: 'La URL de la imagen no puede exceder los 500 caracteres' })
-    imageUrl?: string;
+    imageUrl: string;
 
+    @IsOptional()
     @IsNotEmpty({ message: 'El ID de la tienda no puede estar vacío' })
     @IsUUID('4', { message: 'El ID de la tienda debe ser un UUID válido' })
-    storeId: string;
+    storeId?: string;
 
     @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
     @IsNotEmpty({ message: 'El ID de la categoría no puede estar vacío' })
