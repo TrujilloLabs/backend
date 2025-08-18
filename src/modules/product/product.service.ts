@@ -22,7 +22,6 @@ export class ProductService {
   ) { }
 
 
-
   async createProduct(
     createProductDto: CreateProductDto,
     storeId: string,
@@ -34,7 +33,6 @@ export class ProductService {
 
     return this.mapToResponseDto(savedProduct);
   }
-
 
 
   async findAllByStoreId(
@@ -68,8 +66,6 @@ export class ProductService {
       limit
     );
   }
-
-
 
 
   async getProductById(
