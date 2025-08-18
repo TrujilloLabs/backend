@@ -6,6 +6,7 @@ import { Category } from './entities/category.entity';
 import { QueryFailedError, Repository } from 'typeorm';
 import { ParentCategoryFinder } from './parent-category.finder';
 import { ICategory } from 'src/interfaces/category.interface';
+import { ParentCategoryValidatorService } from './parent-category.validator';
 
 @Injectable()
 export class CategoriesService {
@@ -13,7 +14,8 @@ export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
-    private readonly parentFinder: ParentCategoryFinder
+    private readonly parentFinder: ParentCategoryFinder,
+    private readonly parentValidator: ParentCategoryValidatorService
   ) { }
 
 
@@ -53,23 +55,41 @@ export class CategoriesService {
 
 
 
+  async updateCategory(
+    categoryId: string,
+    storeId: string,
+    updateData: UpdateCategoryDto
+  ): Promise<ICategory> {
+    const category = await this.validateCategoryExists(categoryId, storeId);
 
+    this.applyCategoryUpdates(category, updateData);
 
+    if (updateData.parentCategoryId) {
+      category.parentCategory = await this.parentValidator.validateAndGetParent(
+        updateData.parentCategoryId,
+        storeId
+      );
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+    const updatedCategory = await this.categoryRepo.save(category);
+    return this.toICategory(updatedCategory);
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   remove(id: number) {
     return `This action removes a #${id} category`;
@@ -164,6 +184,37 @@ export class CategoriesService {
         `Category ${categoryId} not found in store ${storeId}`
       );
     }
+  }
+
+  private async validateCategoryExists(
+    categoryId: string,
+    storeId: string
+  ): Promise<Category> {
+    const category = await this.categoryRepo.findOneBy({
+      id: categoryId,
+      store: storeId
+    });
+
+    if (!category) {
+      throw new NotFoundException(
+        `Category with ID ${categoryId} not found in your store`
+      );
+    }
+    return category;
+  }
+
+  private applyCategoryUpdates(
+    category: Category,
+    updateData: UpdateCategoryDto
+  ): void {
+    if (updateData.name) {
+      category.name = updateData.name.trim();
+    }
+
+    if (updateData.isVisible !== undefined) {
+      category.isVisible = updateData.isVisible;
+    }
+
   }
 
 }
