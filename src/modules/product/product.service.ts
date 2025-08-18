@@ -4,9 +4,12 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { FindManyOptions, LessThanOrEqual, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { IProduct } from 'src/interfaces/product.interface';
+import { PaginationDto } from './dto/pagination.dto';
+import { ProductFilterDto } from './dto/product-filter.dto';
+import { PaginatedResponseDto } from './dto/paginated-response.dto';
 
 @Injectable()
 export class ProductService {
@@ -32,6 +35,89 @@ export class ProductService {
   }
 
 
+
+  async findAllByStoreId(
+    storeId: string,
+    paginationDto: PaginationDto,
+    filterDto?: ProductFilterDto
+  ): Promise<PaginatedResponseDto<ProductResponseDto>> {
+    // Asigna valores por defecto seguros
+    const page = paginationDto.page || 1;
+    const limit = paginationDto.limit || 10;
+
+    const skip = (page - 1) * limit;
+
+    const where = this.buildWhereClause(storeId, filterDto);
+
+    const [products, total] = await this.productRepository.findAndCount({
+      where,
+      relations: ['category'],
+      skip,
+      take: limit,
+      order: { createdAt: 'DESC' }
+    });
+
+    return this.buildPaginatedResponse(
+      products.map(this.mapToResponseDto),
+      total,
+      page, // Ya no son undefined
+      limit // Ya no son undefined
+    );
+  }
+
+
+
+
+
+
+
+  private buildWhereClause(
+    storeId: string,
+    filterDto?: ProductFilterDto
+  ): FindManyOptions<Product>['where'] {
+    const where: any = { storeId };
+
+    if (filterDto) {
+      if (filterDto.name) {
+        where.name = Like(`%${filterDto.name}%`);
+      }
+
+      if (filterDto.categoryId) {
+        where.categoryId = filterDto.categoryId;
+      }
+
+      if (filterDto.minPrice !== undefined) {
+        where.price = MoreThanOrEqual(filterDto.minPrice);
+      }
+
+      if (filterDto.maxPrice !== undefined) {
+        where.price = LessThanOrEqual(filterDto.maxPrice);
+      }
+
+      if (filterDto.isActive !== undefined) {
+        where.isActive = filterDto.isActive;
+      }
+    }
+
+    return where;
+  }
+
+  private buildPaginatedResponse(
+    data: ProductResponseDto[],
+    total: number,
+    page: number,
+    limit: number
+  ): PaginatedResponseDto<ProductResponseDto> {
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      }
+    };
+  }
 
 
 
