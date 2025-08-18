@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from 'src/enums/user-role.enum';
+import { AuthStore } from 'src/interfaces/auth-store.interface';
+import { StoreId } from '../auth/decorators/store-id.decorator';
 
 @Controller('categories')
 @UseGuards(JwtAuthGuard)
@@ -28,10 +30,17 @@ export class CategoriesController {
     return this.categoriesService.categoryToFindAll(storeId);
   }
 
+
+
+
   @Get(':id')
-  findOne(@Param('id') categoryId: string, @Req() req) {
-    const storeId = req.user.store_id;
-    return this.categoriesService.categoryTofindOne(categoryId, storeId);
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  findOne(
+    @Param('id') categoryId: string,
+    @StoreId() storeId: string,
+    @Req() req) {
+    return this.categoriesService.findCategoryByIdAndStore(categoryId, storeId);
   }
 
   @Patch(':id')
