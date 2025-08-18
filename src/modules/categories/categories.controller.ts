@@ -9,7 +9,10 @@ import { Role } from 'src/enums/user-role.enum';
 import { AuthStore } from 'src/interfaces/auth-store.interface';
 import { StoreId } from '../auth/decorators/store-id.decorator';
 import { ICategory } from 'src/interfaces/category.interface';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('categories')
+@ApiBearerAuth()
 @Controller('categories')
 @UseGuards(JwtAuthGuard)
 export class CategoriesController {
