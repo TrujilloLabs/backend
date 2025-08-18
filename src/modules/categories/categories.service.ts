@@ -26,25 +26,39 @@ export class CategoriesService {
   }
 
 
-  async categoryToFindAll(storeId: string) {
-    const categories = await this.categoryRepo.find({
-      where: { isVisible: true, store: storeId },
-      relations: ['parentCategory'],
-    });
-    if (!categories.length) {
-      throw new NotFoundException('No categories found');
-    }
+  async categoryToFindAll(storeId: string): Promise<Category[]> {
+    const categories = await this.findCategories(storeId);
+    this.validateCategoriesExist(categories);
     return categories;
   }
 
 
 
-  // where: { isVisible: true },
 
 
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+  async categoryTofindOne(categoryId, storeId) {
+    const category = await this.categoryRepo.findOne({
+      where: { id: categoryId, store: storeId },
+      relations: ['parentCategory', 'subcategories'],
+    });
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${categoryId} not found in store ${storeId}`);
+    }
+    return category;
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {
@@ -59,7 +73,7 @@ export class CategoriesService {
 
 
 
-
+  // TODO: METODOS EXTRAS
 
 
   private buildCategoryEntity(dto: CreateCategoryDto, storeId: string): Category {
@@ -88,6 +102,23 @@ export class CategoriesService {
         throw new ConflictException('Category name already exists in this store');
       }
       throw error;
+    }
+  }
+
+
+  private async findCategories(storeId: string): Promise<Category[]> {
+    return this.categoryRepo.find({
+      where: {
+        isVisible: true,
+        store: storeId
+      },
+      relations: ['parentCategory'],
+    });
+  }
+
+  private validateCategoriesExist(categories: Category[]): void {
+    if (categories.length === 0) {
+      throw new NotFoundException('No visible categories found for this store');
     }
   }
 
