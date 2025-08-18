@@ -16,7 +16,7 @@ export class CategoriesService {
   ) { }
 
 
-  async create(dto: CreateCategoryDto, storeId: string): Promise<Category> {
+  async categoryToCreate(dto: CreateCategoryDto, storeId: string): Promise<Category> {
     await this.validateCategoryName(dto.name);
     const category = this.buildCategoryEntity(dto, storeId);
     if (dto.parentCategoryId) {
