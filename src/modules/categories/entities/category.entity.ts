@@ -1,3 +1,4 @@
+import { Product } from 'src/modules/product/entities/product.entity';
 import { Store } from 'src/modules/stores/entities/store.entity';
 import {
     Entity,
@@ -35,6 +36,9 @@ export class Category {
     //storeId uuid
     @Column({ name: 'store', type: 'uuid' })
     store: string;
+
+    @OneToMany(() => Product, (product) => product.category)
+    products: Product[];
 
     @CreateDateColumn()
     createdAt: Date;
