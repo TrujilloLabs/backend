@@ -4,7 +4,7 @@ import { Expose } from 'class-transformer';
 
 
 
-export class ProductDto {
+export class ProductResponseDto {
     @Expose()
     @ApiProperty()
     id: string;
