@@ -6,7 +6,7 @@ import { Category } from './entities/category.entity';
 import { IsNull, Not, QueryFailedError, Repository } from 'typeorm';
 import { ParentCategoryFinder } from './finders/parent-category.finder';
 import { ICategory } from 'src/interfaces/category.interface';
-import { ParentCategoryValidatorService } from './parent-category.validator';
+import { ParentCategoryValidatorService } from './validators/parent-category.validator';
 import { CategoryValidatorService } from './category.validator.service';
 import { DeleteResult } from 'typeorm/browser';
 
