@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,8 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { ParentCategoryFinder } from './parent-category.finder';
 import { ICategory } from 'src/interfaces/category.interface';
 import { ParentCategoryValidatorService } from './parent-category.validator';
+import { CategoryValidatorService } from './category.validator.service';
+import { DeleteResult } from 'typeorm/browser';
 
 @Injectable()
 export class CategoriesService {
@@ -15,7 +17,8 @@ export class CategoriesService {
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
     private readonly parentFinder: ParentCategoryFinder,
-    private readonly parentValidator: ParentCategoryValidatorService
+    private readonly parentValidator: ParentCategoryValidatorService,
+    private readonly categoryValidator: CategoryValidatorService
   ) { }
 
 
@@ -54,7 +57,6 @@ export class CategoriesService {
   }
 
 
-
   async updateCategory(
     categoryId: string,
     storeId: string,
@@ -75,39 +77,14 @@ export class CategoriesService {
     return this.toICategory(updatedCategory);
   }
 
+  async deleteCategory(
+    categoryId: string,
+    storeId: string
+  ): Promise<DeleteResult> {
+    await this.categoryValidator.validateCategoryOwnership(categoryId, storeId);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+    return this.safeDeleteCategory(categoryId);
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -215,6 +192,26 @@ export class CategoriesService {
       category.isVisible = updateData.isVisible;
     }
 
+  }
+
+
+  private async safeDeleteCategory(categoryId: string): Promise<DeleteResult> {
+    try {
+      return await this.categoryRepo.delete(categoryId);
+    } catch (error) {
+      this.handleDeleteError(error, categoryId);
+    }
+  }
+
+  private handleDeleteError(error: any, categoryId: string): never {
+    if (error.code === '23503') { // Foreign key violation
+      throw new ConflictException(
+        `Cannot delete category ${categoryId} because it has associated products or subcategories`
+      );
+    }
+    throw new InternalServerErrorException(
+      `Failed to delete category ${categoryId}`
+    );
   }
 
 }
