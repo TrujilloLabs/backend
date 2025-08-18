@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -7,10 +7,12 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from 'src/enums/user-role.enum';
 import { StoreId } from '../auth/decorators/store-id.decorator';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { CreateCategoryDto } from '../categories/dto/create-category.dto';
 import { PaginatedResponseDto } from './dto/paginated-response.dto';
+import { PaginationDto } from './dto/pagination.dto';
+import { ProductFilterDto } from './dto/product-filter.dto';
 
 @ApiTags('Product')
 @ApiBearerAuth()
@@ -39,16 +41,22 @@ export class ProductController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Obtener productos paginados por tienda' })
   @ApiResponse({
     status: 200,
     description: 'Lista de productos paginada',
     type: PaginatedResponseDto<ProductResponseDto>,
   })
-  findAll(
-    // @Param('storeId') id: string,
+  async findAll(
     @StoreId() storeId: string,
-  ) {
-    return this.productService.findAllByStoreId(storeId);
+    @Query() paginationDto: PaginationDto,
+    @Query() filterDto: ProductFilterDto
+  ): Promise<PaginatedResponseDto<ProductResponseDto>> {
+    return this.productService.findAllByStoreId(
+      storeId,
+      paginationDto,
+      filterDto
+    );
   }
 
   /// TODO :  Fin
