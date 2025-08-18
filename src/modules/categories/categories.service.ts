@@ -17,7 +17,7 @@ export class CategoriesService {
 
 
   async categoryToCreate(dto: CreateCategoryDto, storeId: string): Promise<Category> {
-    await this.validateCategoryName(dto.name);
+    await this.validateCategoryName(dto.name, storeId);
     const category = this.buildCategoryEntity(dto, storeId);
     if (dto.parentCategoryId) {
       category.parentCategory = await this.parentFinder.findOrFail(dto.parentCategoryId);
@@ -25,33 +25,23 @@ export class CategoriesService {
     return this.categoryRepo.save(category);
   }
 
-  private buildCategoryEntity(dto: CreateCategoryDto, storeId: string): Category {
-    return this.categoryRepo.create({
-      name: dto.name,
-      storeId: storeId,
-      isVisible: dto.isVisible ?? true,
+
+  async categoryToFindAll(storeId: string) {
+    const categories = await this.categoryRepo.find({
+      where: { isVisible: true, store: storeId },
+      relations: ['parentCategory'],
     });
-  }
-
-  private async validateCategoryName(name: string): Promise<void> {
-    try {
-      const exists = await this.categoryRepo.existsBy({ name });
-      if (exists) {
-        throw new ConflictException('Category name already exists');
-      }
-    } catch (error) {
-      // Si hay error de TypeORM, lo relanzamos como Conflict
-      if (error instanceof QueryFailedError && error.driverError?.code === '23505') {
-        throw new ConflictException('Category name already exists');
-      }
-      throw error; // Re-lanzar otros errores
+    if (!categories.length) {
+      throw new NotFoundException('No categories found');
     }
+    return categories;
   }
 
 
-  findAll() {
-    return `This action returns all categories`;
-  }
+
+  // where: { isVisible: true },
+
+
 
   findOne(id: number) {
     return `This action returns a #${id} category`;
@@ -64,4 +54,41 @@ export class CategoriesService {
   remove(id: number) {
     return `This action removes a #${id} category`;
   }
+
+
+
+
+
+
+
+
+  private buildCategoryEntity(dto: CreateCategoryDto, storeId: string): Category {
+    return this.categoryRepo.create({
+      name: dto.name,
+      store: storeId,
+      isVisible: dto.isVisible ?? true,
+    });
+  }
+
+
+  private async validateCategoryName(name: string, storeId: string): Promise<void> {
+    try {
+      const exists = await this.categoryRepo.exists({
+        where: {
+          name,
+          store: storeId
+        }
+      });
+
+      if (exists) {
+        throw new ConflictException('Category name already exists in this store');
+      }
+    } catch (error) {
+      if (error instanceof QueryFailedError && error.driverError?.code === '23505') {
+        throw new ConflictException('Category name already exists in this store');
+      }
+      throw error;
+    }
+  }
+
 }
