@@ -1,6 +1,7 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateCategoryDto } from './create-category.dto';
-import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsUUID, Validate } from 'class-validator';
+import { ParentCategoryValidatorService } from '../parent-category.validator';
 // export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}
 
 export class UpdateCategoryDto {
@@ -14,5 +15,6 @@ export class UpdateCategoryDto {
 
     @IsUUID()
     @IsOptional()
+    @Validate(ParentCategoryValidatorService) // Validación personalizada
     parentCategoryId?: string;
 }
