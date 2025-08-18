@@ -61,8 +61,8 @@ export class Product {
     @JoinColumn({ name: 'category_id' })
     category: Category;
 
-    @Column({ name: 'category_id', type: 'uuid' })
-    categoryId: string;
+    // @Column({ name: 'category_id', type: 'uuid' })
+    // categoryId: string;
 
     @Column({ type: 'boolean', default: true })
     isActive: boolean;
