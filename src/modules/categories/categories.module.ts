@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesService } from './categories.service';
 import { CategoriesController } from './categories.controller';
 import { Category } from './entities/category.entity';
-import { ParentCategoryFinder } from './parent-category.finder';
+import { ParentCategoryFinder } from './finders/parent-category.finder';
 import { ParentCategoryValidatorService } from './parent-category.validator';
 import { CategoryValidatorService } from './category.validator.service';
 

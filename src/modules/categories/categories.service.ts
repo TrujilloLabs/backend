@@ -4,7 +4,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { IsNull, Not, QueryFailedError, Repository } from 'typeorm';
-import { ParentCategoryFinder } from './parent-category.finder';
+import { ParentCategoryFinder } from './finders/parent-category.finder';
 import { ICategory } from 'src/interfaces/category.interface';
 import { ParentCategoryValidatorService } from './parent-category.validator';
 import { CategoryValidatorService } from './category.validator.service';
