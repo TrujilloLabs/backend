@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { QueryFailedError, Repository } from 'typeorm';
 import { ParentCategoryFinder } from './parent-category.finder';
+import { ICategory } from 'src/interfaces/category.interface';
 
 @Injectable()
 export class CategoriesService {
@@ -33,33 +34,38 @@ export class CategoriesService {
   }
 
 
+  async findCategoryByIdAndStore(
+    categoryId: string,
+    storeId: string
+  ): Promise<ICategory> {
+    const category = await this.categoryRepo
+      .createQueryBuilder('category')
+      .leftJoinAndSelect('category.parentCategory', 'parentCategory')
+      .leftJoinAndSelect('category.subcategories', 'subcategories')
+      .where('category.id = :categoryId', { categoryId })
+      .andWhere('category.store = :storeId', { storeId })
+      .getOne();
 
+    this.throwIfNotFound(category, categoryId, storeId);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  async categoryTofindOne(categoryId, storeId) {
-    const category = await this.categoryRepo.findOne({
-      where: { id: categoryId, store: storeId },
-      relations: ['parentCategory', 'subcategories'],
-    });
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${categoryId} not found in store ${storeId}`);
-    }
-    return category;
+    return this.toICategory(category!);
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {
     return `This action updates a #${id} category`;
@@ -68,6 +74,18 @@ export class CategoriesService {
   remove(id: number) {
     return `This action removes a #${id} category`;
   }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -119,6 +137,32 @@ export class CategoriesService {
   private validateCategoriesExist(categories: Category[]): void {
     if (categories.length === 0) {
       throw new NotFoundException('No visible categories found for this store');
+    }
+  }
+
+  private toICategory(category: Category): ICategory {
+    return {
+      id: category.id,
+      name: category.name,
+      isVisible: category.isVisible,
+      parentCategory: category.parentCategory ? this.toICategory(category.parentCategory) : undefined,
+      subcategories: category.subcategories?.map(sub => this.toICategory(sub)) || [],
+      store: category.store,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt
+    };
+  }
+
+
+  private throwIfNotFound(
+    category: Category | null,
+    categoryId: string,
+    storeId: string
+  ): void {
+    if (!category) {
+      throw new NotFoundException(
+        `Category ${categoryId} not found in store ${storeId}`
+      );
     }
   }
 
