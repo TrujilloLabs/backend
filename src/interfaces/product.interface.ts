@@ -14,4 +14,5 @@ export interface IProduct {
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
+    deletedAt: Date | null;
 }
