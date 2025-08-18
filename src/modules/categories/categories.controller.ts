@@ -8,6 +8,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from 'src/enums/user-role.enum';
 import { AuthStore } from 'src/interfaces/auth-store.interface';
 import { StoreId } from '../auth/decorators/store-id.decorator';
+import { ICategory } from 'src/interfaces/category.interface';
 
 @Controller('categories')
 @UseGuards(JwtAuthGuard)
@@ -44,8 +45,12 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+  update(
+    @Param('id') categoryId: string,
+    @Body() updateCategoryDto: UpdateCategoryDto,
+    @StoreId() storeId: string,
+  ): Promise<ICategory> {
+    return this.categoriesService.updateCategory(categoryId, storeId, updateCategoryDto);
   }
 
   @Delete(':id')
