@@ -29,8 +29,9 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+  findOne(@Param('id') categoryId: string, @Req() req) {
+    const storeId = req.user.store_id;
+    return this.categoriesService.categoryTofindOne(categoryId, storeId);
   }
 
   @Patch(':id')
