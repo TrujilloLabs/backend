@@ -5,37 +5,42 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
+import { ProductResponseDto } from './dto/product-response.dto';
+import { IProduct } from 'src/interfaces/product.interface';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>,
+    private readonly productRepository: Repository<Product>,
     @InjectRepository(Category)
-    private readonly categoryRepo: Repository<Category>,
+    private readonly categoryRepository: Repository<Category>,
   ) { }
 
 
 
-  async productToCreate(dto: CreateProductDto, storeId: string): Promise<Product> {
-    // Validar que la categoría pertenezca a la tienda
-    const category = await this.categoryRepo.findOne({
-      where: {
-        id: dto.categoryId,
-        store: storeId
-      },
-    });
-    if (!category) {
-      throw new BadRequestException('Categoría inválida para esta tienda');
-    }
+  async createProduct(
+    createProductDto: CreateProductDto,
+    storeId: string,
+  ): Promise<ProductResponseDto> {
+    await this.validateCategory(createProductDto.categoryId, storeId);
 
-    const product = this.productRepo.create({ ...dto, storeId });
-    return await this.productRepo.save(product);
+    const product = this.buildProductEntity(createProductDto, storeId);
+    const savedProduct = await this.productRepository.save(product);
+
+    return this.mapToResponseDto(savedProduct);
   }
 
-  findAll() {
-    return `This action returns all product`;
-  }
+
+
+
+
+
+
+
+
+
+
 
   findOne(id: number) {
     return `This action returns a #${id} product`;
@@ -47,5 +52,54 @@ export class ProductService {
 
   remove(id: number) {
     return `This action removes a #${id} product`;
+  }
+
+
+
+
+
+  // TODO : los metos 
+
+
+  private async validateCategory(categoryId: string, storeId: string): Promise<void> {
+    const categoryExists = await this.categoryRepository.exist({
+      where: {
+        id: categoryId,
+        store: storeId,
+      },
+    });
+
+    if (!categoryExists) {
+      throw new BadRequestException('Categoría inválida para esta tienda');
+    }
+  }
+
+  private buildProductEntity(
+    createProductDto: CreateProductDto,
+    storeId: string,
+  ): Product {
+    return this.productRepository.create({
+      ...createProductDto,
+      storeId,
+      category: { id: createProductDto.categoryId },
+    });
+  }
+
+  private mapToResponseDto(product: IProduct): ProductResponseDto {
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      priceCop: product.priceCop,
+      priceUsd: product.priceUsd,
+      imageUrl: product.imageUrl,
+      storeId: product.storeId,
+      categoryId: product.category.id,
+      isActive: product.isActive,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+    };
   }
 }
