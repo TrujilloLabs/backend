@@ -18,19 +18,17 @@ export class CategoriesService {
 
   async create(dto: CreateCategoryDto, storeId: string): Promise<Category> {
     await this.validateCategoryName(dto.name);
-
-    const category = this.buildCategoryEntity(dto);
-
+    const category = this.buildCategoryEntity(dto, storeId);
     if (dto.parentCategoryId) {
       category.parentCategory = await this.parentFinder.findOrFail(dto.parentCategoryId);
     }
-
     return this.categoryRepo.save(category);
   }
 
-  private buildCategoryEntity(dto: CreateCategoryDto): Category {
+  private buildCategoryEntity(dto: CreateCategoryDto, storeId: string): Category {
     return this.categoryRepo.create({
       name: dto.name,
+      storeId: storeId,
       isVisible: dto.isVisible ?? true,
     });
   }
