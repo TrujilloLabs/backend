@@ -16,38 +16,45 @@ import { PartialType, ApiProperty } from '@nestjs/swagger';
 // --- DTO para crear un nuevo producto ---
 // Este DTO define las validaciones para los datos obligatorios al crear un producto.
 export class CreateProductDto {
+    @ApiProperty({ maxLength: 150, example: 'Smartphone X' })
     @IsNotEmpty({ message: 'El nombre no puede estar vacío' })
     @IsString({ message: 'El nombre debe ser una cadena de texto' })
     @MaxLength(150, { message: 'El nombre no puede exceder los 150 caracteres' })
     name: string;
 
+    @ApiProperty({ required: false, example: 'Último modelo con cámara mejorada' })
     @IsOptional()
     @IsString({ message: 'La descripción debe ser una cadena de texto' })
     description?: string;
 
+    @ApiProperty({ example: 599.99 })
     @IsNotEmpty({ message: 'El precio no puede estar vacío' })
     @IsNumber({}, { message: 'El precio debe ser un número' })
     @IsPositive({ message: 'El precio debe ser un número positivo' })
     @Max(99999999.99, { message: 'El precio excede el valor máximo permitido' })
     price: number;
 
+    @ApiProperty({ example: 0 })
     @IsNotEmpty({ message: 'El stock no puede estar vacío' })
     @IsNumber({}, { message: 'El stock debe ser un número' })
     @Min(0, { message: 'El stock no puede ser negativo' })
     stock: number;
 
+    @ApiProperty({ example: 599.99 })
     @IsNotEmpty({ message: 'El precio en COP no puede estar vacío' })
     @IsNumber({}, { message: 'El precio en COP debe ser un número' })
     @IsPositive({ message: 'El precio en COP debe ser un número positivo' })
     @Max(99999999.99, { message: 'El precio en COP excede el valor máximo permitido' })
     priceCop: number;
 
+    @ApiProperty({ required: false, example: 599.99 })
     @IsOptional()
     @IsNumber({}, { message: 'El precio en USD debe ser un número' })
     @IsPositive({ message: 'El precio en USD debe ser un número positivo' })
     @Max(99999999.99, { message: 'El precio en USD excede el valor máximo permitido' })
     priceUsd?: number | null;
 
+    @ApiProperty({ required: false, example: 'https://example.com/image.jpg' })
     @IsOptional()
     @IsString({ message: 'La URL de la imagen debe ser una cadena de texto' })
     @IsUrl({}, { message: 'La URL de la imagen debe ser una URL válida' })
@@ -58,10 +65,12 @@ export class CreateProductDto {
     @IsUUID('4', { message: 'El ID de la tienda debe ser un UUID válido' })
     storeId: string;
 
+    @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
     @IsNotEmpty({ message: 'El ID de la categoría no puede estar vacío' })
     @IsUUID('4', { message: 'El ID de la categoría debe ser un UUID válido' })
     categoryId: string;
 
+    @ApiProperty({ example: true, default: true })
     @IsOptional()
     @IsBoolean({ message: 'isActive debe ser un valor booleano' })
     isActive?: boolean;
