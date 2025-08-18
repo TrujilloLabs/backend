@@ -1,4 +1,4 @@
-export interface IProductDto {
+export interface IProduct {
     id: string;
     name: string;
     description?: string;
@@ -8,7 +8,9 @@ export interface IProductDto {
     priceUsd?: number | null;
     imageUrl?: string;
     storeId: string;
-    categoryId: string;
+    category: {
+        id: string;
+    };
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
