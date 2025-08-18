@@ -45,7 +45,7 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'Lista de productos paginada',
-    type: PaginatedResponseDto<ProductResponseDto>,
+    type: PaginatedResponseDto,
   })
   async findAll(
     @StoreId() storeId: string,
@@ -59,12 +59,8 @@ export class ProductController {
     );
   }
 
-  /// TODO :  Fin
+  // TODO :  Fin
 
-  // @Get()
-  // findAll() {
-  //   return this.productService.findAll();
-  // }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
