@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -46,7 +46,7 @@ export class CategoriesController {
 
   @Patch(':id')
   update(
-    @Param('id') categoryId: string,
+    @Param('id', ParseUUIDPipe) categoryId: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
     @StoreId() storeId: string,
   ): Promise<ICategory> {
@@ -54,7 +54,13 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(
+    @Param('id', ParseUUIDPipe) categoryId: string,
+    @StoreId() storeId: string,
+  ) {
+    return this.categoriesService.deleteCategory(categoryId, storeId);
   }
 }
