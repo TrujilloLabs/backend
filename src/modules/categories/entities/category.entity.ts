@@ -8,6 +8,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     JoinColumn,
+    DeleteDateColumn,
 } from 'typeorm';
 
 @Entity('categories')
@@ -40,5 +41,8 @@ export class Category {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @DeleteDateColumn({ name: 'deleted_at' })
+    deletedAt: Date;
 }
 
