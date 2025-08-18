@@ -15,7 +15,7 @@ export class Category {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ length: 150, unique: true })
+    @Column({ length: 150 })
     name: string;
 
     @Column({ default: true })
@@ -32,8 +32,8 @@ export class Category {
     subcategories: Category[];
 
     //storeId uuid
-    @Column({ name: 'store_id', type: 'uuid' })
-    storeId: string;
+    @Column({ name: 'store', type: 'uuid' })
+    store: string;
 
     @CreateDateColumn()
     createdAt: Date;
