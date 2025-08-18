@@ -32,8 +32,6 @@ export class CategoriesController {
   }
 
 
-
-
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN_TIENDA)
@@ -62,5 +60,16 @@ export class CategoriesController {
     @StoreId() storeId: string,
   ) {
     return this.categoriesService.deleteCategory(categoryId, storeId);
+  }
+
+  // Para restaurar categorías eliminadas:
+  @Patch(':id/restore')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  restore(
+    @Param('id', ParseUUIDPipe) categoryId: string,
+    @StoreId() storeId: string,
+  ) {
+    return this.categoriesService.restoreCategory(categoryId, storeId);
   }
 }
