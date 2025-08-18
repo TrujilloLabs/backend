@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseUUIDPipe } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -41,6 +41,8 @@ export class ProductController {
   }
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
   @ApiOperation({ summary: 'Obtener productos paginados por tienda' })
   @ApiResponse({
     status: 200,
@@ -59,13 +61,31 @@ export class ProductController {
     );
   }
 
+  @Get(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  @ApiOperation({ summary: 'Obtener un producto por ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Detalles del producto',
+    type: ProductResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Producto no encontrado',
+  })
+  async getProductById(
+    @Param('id', ParseUUIDPipe) productId: string, // Validación de UUID
+    @StoreId() storeId: string
+  ): Promise<ProductResponseDto> {
+    return this.productService.getProductById(productId, storeId);
+  }
+
+
+
   // TODO :  Fin
 
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
-  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
