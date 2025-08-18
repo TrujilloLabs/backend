@@ -17,7 +17,7 @@ export class CategoriesController {
   @Roles(Role.ADMIN_TIENDA)
   create(@Body() dto: CreateCategoryDto, @Req() req) {
     const storeId = req.user.store_id;
-    return this.categoriesService.create(dto, storeId);
+    return this.categoriesService.categoryToCreate(dto, storeId);
   }
 
   @Get()
