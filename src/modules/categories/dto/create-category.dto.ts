@@ -12,6 +12,9 @@ export class CreateCategoryDto {
     @IsUUID()
     @IsOptional()
     parentCategoryId?: string;
+
+    // @IsUUID()
+    // storeId: string;
 }
 
 
