@@ -1,3 +1,4 @@
+import { Store } from 'src/modules/stores/entities/store.entity';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -6,6 +7,7 @@ import {
     OneToMany,
     CreateDateColumn,
     UpdateDateColumn,
+    JoinColumn,
 } from 'typeorm';
 
 @Entity('categories')
@@ -28,6 +30,10 @@ export class Category {
 
     @OneToMany(() => Category, (category) => category.parentCategory)
     subcategories: Category[];
+
+    //storeId uuid
+    @Column({ name: 'store_id', type: 'uuid' })
+    storeId: string;
 
     @CreateDateColumn()
     createdAt: Date;
