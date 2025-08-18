@@ -6,6 +6,7 @@ import { CategoriesService } from './categories.service';
 import { CategoriesController } from './categories.controller';
 import { Category } from './entities/category.entity';
 import { ParentCategoryFinder } from './parent-category.finder';
+import { ParentCategoryValidatorService } from './parent-category.validator';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { ParentCategoryFinder } from './parent-category.finder';
   controllers: [CategoriesController],
   providers: [
     CategoriesService,
-    ParentCategoryFinder
+    ParentCategoryFinder,
+    ParentCategoryValidatorService
   ],
 })
 export class CategoriesModule { }
