@@ -34,7 +34,6 @@ export class ProductService {
     return this.mapToResponseDto(savedProduct);
   }
 
-
   async findAllByStoreId(
     storeId: string,
     paginationDto: PaginationDto,
@@ -67,7 +66,6 @@ export class ProductService {
     );
   }
 
-
   async getProductById(
     productId: string,
     storeId: string
@@ -76,31 +74,7 @@ export class ProductService {
     return this.mapToResponseDto(product);
   }
 
-  private async findProductOrFail(
-    productId: string,
-    storeId: string
-  ): Promise<Product> {
-    const product = await this.productRepository.findOne({
-      where: {
-        id: productId,
-        storeId
-      },
-      relations: {
-        // category: true
-        category: {
-          parentCategory: true
-        }
-      }
-    });
 
-    if (!product) {
-      throw new NotFoundException(
-        `Producto con ID ${productId} no encontrado en esta tienda`
-      );
-    }
-
-    return product;
-  }
 
 
 
@@ -236,5 +210,31 @@ export class ProductService {
         totalPages: Math.ceil(total / limit),
       }
     };
+  }
+
+  private async findProductOrFail(
+    productId: string,
+    storeId: string
+  ): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: {
+        id: productId,
+        storeId
+      },
+      relations: {
+        // category: true
+        category: {
+          parentCategory: true
+        }
+      }
+    });
+
+    if (!product) {
+      throw new NotFoundException(
+        `Producto con ID ${productId} no encontrado en esta tienda`
+      );
+    }
+
+    return product;
   }
 }
