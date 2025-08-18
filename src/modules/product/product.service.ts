@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +10,7 @@ import { IProduct } from 'src/interfaces/product.interface';
 import { PaginationDto } from './dto/pagination.dto';
 import { ProductFilterDto } from './dto/product-filter.dto';
 import { PaginatedResponseDto } from './dto/paginated-response.dto';
+import { CategoryResponseDto } from '../categories/dto/category-response.dto';
 
 @Injectable()
 export class ProductService {
@@ -41,7 +42,7 @@ export class ProductService {
     paginationDto: PaginationDto,
     filterDto?: ProductFilterDto
   ): Promise<PaginatedResponseDto<ProductResponseDto>> {
-    // Asigna valores por defecto seguros
+
     const page = paginationDto.page || 1;
     const limit = paginationDto.limit || 10;
 
@@ -51,18 +52,58 @@ export class ProductService {
 
     const [products, total] = await this.productRepository.findAndCount({
       where,
-      relations: ['category'],
+      relations: {
+        category: true, // Aseguramos que la categoría se cargue
+      },
       skip,
       take: limit,
       order: { createdAt: 'DESC' }
     });
 
+    const productDtos = products.map(product => this.mapToResponseDto(product));
     return this.buildPaginatedResponse(
-      products.map(this.mapToResponseDto),
+      productDtos,
       total,
-      page, // Ya no son undefined
-      limit // Ya no son undefined
+      page,
+      limit
     );
+  }
+
+
+
+
+  async getProductById(
+    productId: string,
+    storeId: string
+  ): Promise<ProductResponseDto> {
+    const product = await this.findProductOrFail(productId, storeId);
+    return this.mapToResponseDto(product);
+  }
+
+  private async findProductOrFail(
+    productId: string,
+    storeId: string
+  ): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: {
+        id: productId,
+        storeId
+      },
+      relations: {
+        // category: true
+        category: {
+          parentCategory: true
+        }
+      }
+    });
+
+    if (!product) {
+      throw new NotFoundException(
+        `Producto con ID ${productId} no encontrado en esta tienda`
+      );
+    }
+
+    return product;
   }
 
 
@@ -70,6 +111,88 @@ export class ProductService {
 
 
 
+
+
+
+
+
+
+
+
+
+  // TODO : METODOS
+
+  update(id: number, updateProductDto: UpdateProductDto) {
+    return `This action updates a #${id} product`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} product`;
+  }
+
+
+
+
+
+  // TODO : los metos 
+
+
+  private async validateCategory(categoryId: string, storeId: string): Promise<void> {
+    const categoryExists = await this.categoryRepository.exist({
+      where: {
+        id: categoryId,
+        store: storeId,
+      },
+    });
+
+    if (!categoryExists) {
+      throw new BadRequestException('Categoría inválida para esta tienda');
+    }
+  }
+
+  private buildProductEntity(
+    createProductDto: CreateProductDto,
+    storeId: string,
+  ): Product {
+    return this.productRepository.create({
+      ...createProductDto,
+      storeId,
+      category: { id: createProductDto.categoryId },
+    });
+  }
+
+  private mapToResponseDto(product: Product): ProductResponseDto {
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      priceCop: product.priceCop,
+      priceUsd: product.priceUsd,
+      imageUrl: product.imageUrl,
+      storeId: product.storeId,
+      // categoryId: product.category.id,
+      category: this.mapCategoryToDto(product.category),
+      isActive: product.isActive,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      deletedAt: product.deletedAt,
+    };
+  }
+  private mapCategoryToDto(category: Category): CategoryResponseDto {
+    return {
+      id: category.id,
+      name: category.name,
+      isVisible: category.isVisible,
+      storeId: category.store,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+      parentCategory: category.parentCategory
+        ? this.mapCategoryToDto(category.parentCategory) // Recursividad controlada
+        : undefined
+    };
+  }
 
   private buildWhereClause(
     storeId: string,
@@ -116,76 +239,6 @@ export class ProductService {
         limit,
         totalPages: Math.ceil(total / limit),
       }
-    };
-  }
-
-
-
-
-
-
-
-
-
-
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
-  }
-
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} product`;
-  }
-
-
-
-
-
-  // TODO : los metos 
-
-
-  private async validateCategory(categoryId: string, storeId: string): Promise<void> {
-    const categoryExists = await this.categoryRepository.exist({
-      where: {
-        id: categoryId,
-        store: storeId,
-      },
-    });
-
-    if (!categoryExists) {
-      throw new BadRequestException('Categoría inválida para esta tienda');
-    }
-  }
-
-  private buildProductEntity(
-    createProductDto: CreateProductDto,
-    storeId: string,
-  ): Product {
-    return this.productRepository.create({
-      ...createProductDto,
-      storeId,
-      category: { id: createProductDto.categoryId },
-    });
-  }
-
-  private mapToResponseDto(product: IProduct): ProductResponseDto {
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      stock: product.stock,
-      priceCop: product.priceCop,
-      priceUsd: product.priceUsd,
-      imageUrl: product.imageUrl,
-      storeId: product.storeId,
-      categoryId: product.category.id,
-      isActive: product.isActive,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
     };
   }
 }
