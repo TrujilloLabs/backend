@@ -21,8 +21,11 @@ export class CategoriesController {
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  findAll(@Req() req) {
+    const storeId = req.user.store_id;
+    return this.categoriesService.categoryToFindAll(storeId);
   }
 
   @Get(':id')
