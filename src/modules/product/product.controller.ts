@@ -83,14 +83,34 @@ export class ProductController {
 
 
 
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  @ApiOperation({ summary: 'Actualizar un producto' })
+  @ApiResponse({ status: 200, description: 'Producto actualizado', type: ProductResponseDto, })
+  @ApiResponse({ status: 400, description: 'Datos de actualización inválidos', })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado', })
+  async updateProduct(
+    @Param('id', ParseUUIDPipe) productId: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @StoreId() storeId: string
+  ): Promise<ProductResponseDto> {
+    return this.productService.updateProduct(
+      productId,
+      updateProductDto,
+      storeId
+    );
+  }
+
+
   // TODO :  Fin
 
 
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  //   return this.productService.update(+id, updateProductDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
