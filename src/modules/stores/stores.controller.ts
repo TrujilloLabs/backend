@@ -25,6 +25,7 @@ export class StoresController {
   }
 
   @Get(':id')
+  //! FALTA VALIDAR POR EL storeId
   async findOne(@Param('id') id: string) {
     const store = await this.storesService.findOne(id);
     if (!store) throw new NotFoundException('Store not found');

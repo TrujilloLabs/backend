@@ -9,6 +9,8 @@ import { StoresModule } from './modules/stores/stores.module';
 import { UsersModule } from './modules/users/users.module';
 import { LinceseModule } from './modules/lincese/lincese.module';
 import { SeedModule } from './modules/seed/seed.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ProductModule } from './modules/product/product.module';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, }),
 
@@ -24,15 +26,19 @@ import { SeedModule } from './modules/seed/seed.module';
     synchronize: true,  // Disable this in production
   }),
 
-  AuthModule,
+    AuthModule,
 
-  StoresModule,
+    StoresModule,
 
-  UsersModule,
+    UsersModule,
 
-  LinceseModule,
+    LinceseModule,
 
-  SeedModule
+    SeedModule,
+
+    ProductModule,
+
+    CategoriesModule
   ],
   // controllers: [AppController],
   // providers: [AppService],
