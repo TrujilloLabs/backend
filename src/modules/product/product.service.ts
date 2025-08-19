@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +11,7 @@ import { PaginationDto } from './dto/pagination.dto';
 import { ProductFilterDto } from './dto/product-filter.dto';
 import { PaginatedResponseDto } from './dto/paginated-response.dto';
 import { CategoryResponseDto } from '../categories/dto/category-response.dto';
+import { ProductValidatorService } from './validators/product-validator.service';
 
 @Injectable()
 export class ProductService {
@@ -19,6 +20,7 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly validator: ProductValidatorService
   ) { }
 
 
@@ -75,6 +77,70 @@ export class ProductService {
   }
 
 
+  async updateProduct(
+    productId: string,
+    updateDto: UpdateProductDto,
+    storeId: string
+  ): Promise<ProductResponseDto> {
+    const product = await this.findProductOrFail(productId, storeId);
+
+    await this.validateUpdateData(updateDto, storeId, productId);
+
+    this.applyUpdates(product, updateDto);
+
+    const updatedProduct = await this.saveProduct(product);
+
+    return this.mapToResponseDto(updatedProduct);
+  }
+
+  private async validateUpdateData(
+    updateDto: UpdateProductDto,
+    storeId: string,
+    productId: string
+  ): Promise<void> {
+    if (updateDto.categoryId) {
+      await this.validator.validateCategory(updateDto.categoryId, storeId);
+    }
+
+    //TODO : estar pendiente
+    if (updateDto.name) {
+      await this.validator.validateProductName(
+        updateDto.name,
+        storeId,
+        updateDto.categoryId || '', // Aseguramos que categoryId no sea undefined
+        productId // Si es actualización, excluir el producto actual
+      );
+    }
+  }
+
+  // updateDto.id // Excluir el producto actual si se está actualizando
+
+
+  private applyUpdates(product: Product, updateDto: UpdateProductDto): void {
+    // Actualizar solo los campos proporcionados
+    Object.keys(updateDto).forEach(key => {
+      if (key === 'categoryId' && updateDto.categoryId) {
+        product.category = { id: updateDto.categoryId } as Category;
+      } else if (updateDto[key] !== undefined && key !== 'categoryId') {
+        product[key] = updateDto[key];
+      }
+    });
+  }
+
+  private async saveProduct(product: Product): Promise<Product> {
+    try {
+      return await this.productRepository.save(product);
+    } catch (error) {
+      this.handleSaveError(error);
+    }
+  }
+
+  private handleSaveError(error: any): never {
+    if (error.code === '23505') { // Unique constraint violation
+      throw new ConflictException('El nombre del producto ya existe en esta categoría');
+    }
+    throw new InternalServerErrorException('Error al actualizar el producto');
+  }
 
 
 
