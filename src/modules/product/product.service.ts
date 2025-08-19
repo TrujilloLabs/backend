@@ -12,6 +12,7 @@ import { ProductFilterDto } from './dto/product-filter.dto';
 import { PaginatedResponseDto } from './dto/paginated-response.dto';
 import { CategoryResponseDto } from '../categories/dto/category-response.dto';
 import { ProductValidatorService } from './validators/product-validator.service';
+import { DeleteResult } from 'typeorm/browser';
 
 @Injectable()
 export class ProductService {
@@ -76,7 +77,6 @@ export class ProductService {
     return this.mapToResponseDto(product);
   }
 
-
   async updateProduct(
     productId: string,
     updateDto: UpdateProductDto,
@@ -93,84 +93,21 @@ export class ProductService {
     return this.mapToResponseDto(updatedProduct);
   }
 
-  private async validateUpdateData(
-    updateDto: UpdateProductDto,
-    storeId: string,
-    productId: string
-  ): Promise<void> {
-    if (updateDto.categoryId) {
-      await this.validator.validateCategory(updateDto.categoryId, storeId);
-    }
+  async remove(
+    productId: string,
+    storeId: string
+  ): Promise<DeleteResult> {
 
-    //TODO : estar pendiente
-    if (updateDto.name) {
-      await this.validator.validateProductName(
-        updateDto.name,
-        storeId,
-        updateDto.categoryId || '', // Aseguramos que categoryId no sea undefined
-        productId // Si es actualización, excluir el producto actual
-      );
-    }
-  }
+    const product = await this.findProductOrFail(productId, storeId);
 
-  // updateDto.id // Excluir el producto actual si se está actualizando
-
-
-  private applyUpdates(product: Product, updateDto: UpdateProductDto): void {
-    // Actualizar solo los campos proporcionados
-    Object.keys(updateDto).forEach(key => {
-      if (key === 'categoryId' && updateDto.categoryId) {
-        product.category = { id: updateDto.categoryId } as Category;
-      } else if (updateDto[key] !== undefined && key !== 'categoryId') {
-        product[key] = updateDto[key];
-      }
-    });
-  }
-
-  private async saveProduct(product: Product): Promise<Product> {
-    try {
-      return await this.productRepository.save(product);
-    } catch (error) {
-      this.handleSaveError(error);
-    }
-  }
-
-  private handleSaveError(error: any): never {
-    if (error.code === '23505') { // Unique constraint violation
-      throw new ConflictException('El nombre del producto ya existe en esta categoría');
-    }
-    throw new InternalServerErrorException('Error al actualizar el producto');
+    return this.safeDeleteProduct(product.id, storeId);
   }
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-  // TODO : METODOS
-
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} product`;
-  }
-
-
-
-
-
-  // TODO : los metos 
+  // TODO : METODOS 
 
 
   private async validateCategory(categoryId: string, storeId: string): Promise<void> {
@@ -303,4 +240,75 @@ export class ProductService {
 
     return product;
   }
+
+  private async validateUpdateData(
+    updateDto: UpdateProductDto,
+    storeId: string,
+    productId: string
+  ): Promise<void> {
+    if (updateDto.categoryId) {
+      await this.validator.validateCategory(updateDto.categoryId, storeId);
+    }
+
+    //TODO : estar pendiente
+    if (updateDto.name) {
+      await this.validator.validateProductName(
+        updateDto.name,
+        storeId,
+        updateDto.categoryId || '',
+        productId
+      );
+    }
+  }
+
+  private applyUpdates(product: Product, updateDto: UpdateProductDto): void {
+    // Actualizar solo los campos proporcionados
+    Object.keys(updateDto).forEach(key => {
+      if (key === 'categoryId' && updateDto.categoryId) {
+        product.category = { id: updateDto.categoryId } as Category;
+      } else if (updateDto[key] !== undefined && key !== 'categoryId') {
+        product[key] = updateDto[key];
+      }
+    });
+  }
+
+  private async saveProduct(product: Product): Promise<Product> {
+    try {
+      return await this.productRepository.save(product);
+    } catch (error) {
+      this.handleSaveError(error);
+    }
+  }
+
+  private handleSaveError(error: any): never {
+    if (error.code === '23505') { // Unique constraint violation
+      throw new ConflictException('El nombre del producto ya existe en esta categoría');
+    }
+    throw new InternalServerErrorException('Error al actualizar el producto');
+  }
+
+  private handleDeleteError(error: any, categoryId: string): never {
+    if (error.code === '23503') { // Foreign key violation
+      throw new ConflictException(
+        `Cannot delete category ${categoryId} because it has associated products or subcategories`
+      );
+    }
+    throw new InternalServerErrorException(
+      `Failed to delete category ${categoryId}`
+    );
+  }
+
+  private async safeDeleteProduct(productId: string, storeId: string): Promise<DeleteResult> {
+
+    try {
+      return await this.productRepository.softDelete(productId)
+
+    } catch (error) {
+
+      this.handleDeleteError(error, productId);
+
+    }
+
+  }
+
 }
