@@ -9,7 +9,8 @@ import { Role } from 'src/enums/user-role.enum';
 import { AuthStore } from 'src/interfaces/auth-store.interface';
 import { StoreId } from '../auth/decorators/store-id.decorator';
 import { ICategory } from 'src/interfaces/category.interface';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CategoryResponseDto } from './dto/category-response.dto';
 
 @ApiTags('categories')
 @ApiBearerAuth()
@@ -21,8 +22,30 @@ export class CategoriesController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN_TIENDA)
-  create(@Body() dto: CreateCategoryDto, @Req() req) {
-    const storeId = req.user.store_id;
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new category' })
+  @ApiBody({ type: CreateCategoryDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Category created successfully',
+    type: CategoryResponseDto
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Category name already exists in this store'
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Store or parent category not found'
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data'
+  })
+  create(@
+    Body() dto: CreateCategoryDto,
+    @StoreId() storeId: string
+  ): Promise<CategoryResponseDto> {
     return this.categoriesService.categoryToCreate(dto, storeId);
   }
 
