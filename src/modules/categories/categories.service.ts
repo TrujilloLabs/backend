@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, Logger } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,8 +7,13 @@ import { IsNull, Not, QueryFailedError, Repository } from 'typeorm';
 import { ParentCategoryFinder } from './finders/parent-category.finder';
 import { ICategory } from 'src/interfaces/category.interface';
 import { ParentCategoryValidatorService } from './validators/parent-category.validator';
-import { CategoryValidatorService } from './category.validator.service';
+import { CategoryValidatorService } from './validators/category.validator.service';
 import { DeleteResult } from 'typeorm/browser';
+import { AuthService } from '../auth/auth.service';
+import { StoreValidatorService } from '../auth/validators/validate-store-exists.validator';
+import { CategoryMapper } from './mappers/category.mapper';
+import { CategoryResponseDto } from './dto/category-response.dto';
+
 
 @Injectable()
 export class CategoriesService {
@@ -18,19 +23,79 @@ export class CategoriesService {
     private readonly categoryRepo: Repository<Category>,
     private readonly parentFinder: ParentCategoryFinder,
     private readonly parentValidator: ParentCategoryValidatorService,
-    private readonly categoryValidator: CategoryValidatorService
+    private readonly categoryValidator: CategoryValidatorService,
+    private readonly authService: AuthService,
+    private readonly storeValidator: StoreValidatorService,
+    // private readonly categoryValidator: CategoryValidator,
   ) { }
 
 
-  async categoryToCreate(dto: CreateCategoryDto, storeId: string): Promise<Category> {
-    await this.validateCategoryName(dto.name, storeId);
+
+  async categoryToCreate(
+    dto: CreateCategoryDto,
+    storeId: string
+  ): Promise<CategoryResponseDto> {
+    // Validar que la tienda exista
+    await this.storeValidator.validateStoreExists(storeId);
+
+    await this.categoryValidator.validateUniqueName(dto.name, storeId);
+
     const category = this.buildCategoryEntity(dto, storeId);
+
     if (dto.parentCategoryId) {
-      category.parentCategory = await this.parentFinder.findOrFail(dto.parentCategoryId);
+      category.parentCategory = await this.parentFinder.findOrFail(dto.parentCategoryId, storeId);
     }
-    return this.categoryRepo.save(category);
+
+    const savedCategory = await this.categoryRepo.save(category);
+    return CategoryMapper.toResponseDto(savedCategory);
+
+    // return this.categoryRepo.save(category);
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //! Organizar este codigo
+  // async categoryToCreate(dto: CreateCategoryDto, storeId: string): Promise<Category> {
+  //   await this.validateCategoryName(dto.name, storeId);
+  //   //TODO: clean Code con el codigo
+  //   const category = this.buildCategoryEntity(dto, storeId);
+  //   if (dto.parentCategoryId) {
+  //     category.parentCategory = await this.parentFinder.findOrFail(dto.parentCategoryId);
+  //   }
+  //   return this.categoryRepo.save(category);
+  // }
+
+
+
+
+
+
+
+
+
+  // TODO : FLATA REFACTORIZAR
 
   async categoryToFindAll(storeId: string): Promise<Category[]> {
     const categories = await this.findCategories(storeId);
@@ -113,26 +178,26 @@ export class CategoriesService {
     });
   }
 
+  //TODO: FUNCION ES DESUSO
+  // private async validateCategoryName(name: string, storeId: string): Promise<void> {
+  //   try {
+  //     const exists = await this.categoryRepo.exists({
+  //       where: {
+  //         name,
+  //         store: storeId
+  //       }
+  //     });
 
-  private async validateCategoryName(name: string, storeId: string): Promise<void> {
-    try {
-      const exists = await this.categoryRepo.exists({
-        where: {
-          name,
-          store: storeId
-        }
-      });
-
-      if (exists) {
-        throw new ConflictException('Category name already exists in this store');
-      }
-    } catch (error) {
-      if (error instanceof QueryFailedError && error.driverError?.code === '23505') {
-        throw new ConflictException('Category name already exists in this store');
-      }
-      throw error;
-    }
-  }
+  //     if (exists) {
+  //       throw new ConflictException('Category name already exists in this store');
+  //     }
+  //   } catch (error) {
+  //     if (error instanceof QueryFailedError && error.driverError?.code === '23505') {
+  //       throw new ConflictException('Category name already exists in this store');
+  //     }
+  //     throw error;
+  //   }
+  // }
 
 
   private async findCategories(storeId: string): Promise<Category[]> {
