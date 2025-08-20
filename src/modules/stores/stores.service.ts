@@ -90,6 +90,4 @@ export class StoresService {
     }
     return { message: 'Store not found' };
   }
-
-
 }
