@@ -14,10 +14,11 @@ export class ParentCategoryFinder {
         private readonly categoryRepo: Repository<Category>,
     ) { }
 
-    async findOrFail(parentId: string): Promise<Category> {
+    async findOrFail(parentId: string, storeId: string): Promise<Category> {
         const parent = await this.categoryRepo
             .createQueryBuilder('category')
             .where('category.id = :parentId', { parentId })
+            .andWhere('category.store = :storeId', { storeId })
             .andWhere('category.deletedAt IS NULL') // solo categorías activas
             .getOne();
 
