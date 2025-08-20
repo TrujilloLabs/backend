@@ -22,9 +22,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
         secret: cfg.get<string>('JWT_SECRET') || 'default_secret',
         signOptions: { expiresIn: cfg.get<string>('JWT_EXPIRES') || '1d' },
       }),
-    })
+    }),
     // TypeOrmModule.forFeature([User])
-  ]
+  ],
+  exports: [AuthService],
+
 })
 export class AuthModule { }
 
