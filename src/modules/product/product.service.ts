@@ -13,6 +13,8 @@ import { PaginatedResponseDto } from './dto/paginated-response.dto';
 import { CategoryResponseDto } from '../categories/dto/category-response.dto';
 import { ProductValidatorService } from './validators/product-validator.service';
 import { DeleteResult } from 'typeorm/browser';
+import { CategoryMapper } from '../categories/mappers/category.mapper';
+import { mapToResponseDto } from './mappers/product.mapper';
 
 @Injectable()
 export class ProductService {
@@ -21,7 +23,7 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-    private readonly validator: ProductValidatorService
+    private readonly validator: ProductValidatorService,
   ) { }
 
 
@@ -34,7 +36,7 @@ export class ProductService {
     const product = this.buildProductEntity(createProductDto, storeId);
     const savedProduct = await this.productRepository.save(product);
 
-    return this.mapToResponseDto(savedProduct);
+    return mapToResponseDto(savedProduct);
   }
 
   async findAllByStoreId(
@@ -60,7 +62,7 @@ export class ProductService {
       order: { createdAt: 'DESC' }
     });
 
-    const productDtos = products.map(product => this.mapToResponseDto(product));
+    const productDtos = products.map(product => mapToResponseDto(product));
     return this.buildPaginatedResponse(
       productDtos,
       total,
@@ -74,7 +76,7 @@ export class ProductService {
     storeId: string
   ): Promise<ProductResponseDto> {
     const product = await this.findProductOrFail(productId, storeId);
-    return this.mapToResponseDto(product);
+    return mapToResponseDto(product);
   }
 
   async updateProduct(
@@ -90,7 +92,7 @@ export class ProductService {
 
     const updatedProduct = await this.saveProduct(product);
 
-    return this.mapToResponseDto(updatedProduct);
+    return mapToResponseDto(updatedProduct);
   }
 
   async remove(
@@ -134,38 +136,43 @@ export class ProductService {
     });
   }
 
-  private mapToResponseDto(product: Product): ProductResponseDto {
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      stock: product.stock,
-      priceCop: product.priceCop,
-      priceUsd: product.priceUsd,
-      imageUrl: product.imageUrl,
-      storeId: product.storeId,
-      // categoryId: product.category.id,
-      category: this.mapCategoryToDto(product.category),
-      isActive: product.isActive,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
-      deletedAt: product.deletedAt,
-    };
-  }
-  private mapCategoryToDto(category: Category): CategoryResponseDto {
-    return {
-      id: category.id,
-      name: category.name,
-      isVisible: category.isVisible,
-      storeId: category.store,
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
-      parentCategory: category.parentCategory
-        ? this.mapCategoryToDto(category.parentCategory) // Recursividad controlada
-        : undefined
-    };
-  }
+  //! Codigo deprecado en desuso utilizat la otra version
+
+  // private mapToResponseDto(product: Product): ProductResponseDto {
+  //   return {
+  //     id: product.id,
+  //     name: product.name,
+  //     description: product.description,
+  //     price: product.price,
+  //     stock: product.stock,
+  //     priceCop: product.priceCop,
+  //     priceUsd: product.priceUsd,
+  //     imageUrl: product.imageUrl,
+  //     storeId: product.storeId,
+  //     // categoryId: product.category.id,
+  //     // category: this.mapCategoryToDto(product.category),
+  //     category: CategoryMapper.toResponseDto(product.category),
+  //     isActive: product.isActive,
+  //     createdAt: product.createdAt,
+  //     updatedAt: product.updatedAt,
+  //     deletedAt: product.deletedAt,
+  //   };
+  // }
+
+  //! Codigo deprecado en desuso utilizat la otra version
+  // private mapCategoryToDto(category: Category): CategoryResponseDto {
+  //   return {
+  //     id: category.id,
+  //     name: category.name,
+  //     isVisible: category.isVisible,
+  //     storeId: category.store,
+  //     createdAt: category.createdAt,
+  //     updatedAt: category.updatedAt,
+  //     parentCategory: category.parentCategory
+  //       ? this.mapCategoryToDto(category.parentCategory) // Recursividad controlada
+  //       : undefined
+  //   };
+  // }
 
   private buildWhereClause(
     storeId: string,
