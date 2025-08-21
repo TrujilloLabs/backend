@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, Logger } from '@nestjs/common';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 import { SubcategoryResponseDto } from './dto/subcategory-response.dto';
@@ -14,6 +14,7 @@ import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class SubcategoriesService {
+  private readonly logger = new Logger(SubcategoriesService.name);
 
   constructor(
     @InjectRepository(Subcategory)
@@ -54,9 +55,49 @@ export class SubcategoriesService {
 
   }
 
-  findAll() {
-    return `This action returns all subcategories`;
+  async findAll(userStoreId): Promise<SubcategoryResponseDto[]> {
+    try {
+      this.logger.log('Fetching all subcategories');
+
+      const subcategories = await this.subCategoryRepository.find({
+        relations: ['category'],
+        // where: { deletedAt: null },
+        where: userStoreId ? { store: userStoreId } : {},
+        order: { createdAt: 'DESC' },
+      });
+
+      this.logger.log(`Found ${subcategories.length} subcategories`);
+
+      return SubcategoryMapper.toResponseDtoList(subcategories);
+    } catch (error) {
+      this.logger.error('Error fetching subcategories', error.stack);
+      throw new InternalServerErrorException('Error al obtener las subcategorías');
+    }
   }
+
+  // Si necesitas filtrar por tienda
+  async findAllByStore(storeId: string): Promise<SubcategoryResponseDto[]> {
+    try {
+      this.logger.log(`Fetching subcategories for store: ${storeId}`);
+
+      const subcategories = await this.subCategoryRepository.find({
+        relations: ['category'],
+        where: {
+          store: storeId,
+          // deletedAt: null
+        },
+        order: { createdAt: 'DESC' },
+      });
+
+      this.logger.log(`Found ${subcategories.length} subcategories for store ${storeId}`);
+
+      return SubcategoryMapper.toResponseDtoList(subcategories);
+    } catch (error) {
+      this.logger.error('Error fetching subcategories by store', error.stack);
+      throw new InternalServerErrorException('Error al obtener las subcategorías de la tienda');
+    }
+  }
+
 
   findOne(id: number) {
     return `This action returns a #${id} subcategory`;
