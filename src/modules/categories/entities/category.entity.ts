@@ -1,5 +1,6 @@
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Store } from 'src/modules/stores/entities/store.entity';
+import { Subcategory } from 'src/modules/subcategories/entities/subcategory.entity';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -30,15 +31,14 @@ export class Category {
     })
     parentCategory: Category;
 
-    @OneToMany(() => Category, (category) => category.parentCategory)
-    subcategories: Category[];
+    @OneToMany(() => Subcategory, (subcategory) => subcategory.category, {
+        cascade: true,
+    })
+    subcategories: Subcategory[];
 
     //storeId uuid
     @Column({ name: 'store', type: 'uuid' })
     store: string;
-
-    @OneToMany(() => Product, (product) => product.category)
-    products: Product[];
 
     @CreateDateColumn()
     createdAt: Date;

@@ -222,8 +222,8 @@ export class CategoriesService {
       id: category.id,
       name: category.name,
       isVisible: category.isVisible,
-      parentCategory: category.parentCategory ? this.toICategory(category.parentCategory) : undefined,
-      subcategories: category.subcategories?.map(sub => this.toICategory(sub)) || [],
+      parentCategory: undefined,
+      subcategories: [],
       store: category.store,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt

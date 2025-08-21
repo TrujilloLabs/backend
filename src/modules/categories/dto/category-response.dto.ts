@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { SubcategoryResponseDto } from 'src/modules/subcategories/dto/subcategory-response.dto';
 
 export class CategoryResponseDto {
     @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
@@ -11,11 +12,11 @@ export class CategoryResponseDto {
     isVisible: boolean;
 
     @ApiProperty({
-        type: CategoryResponseDto,
+        type: SubcategoryResponseDto,
         required: false,
-        description: 'Categoría padre (si existe)'
+        description: 'Subcategoría (si existe)'
     })
-    parentCategory?: CategoryResponseDto;
+    subcategories?: SubcategoryResponseDto[];
 
     @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
     storeId: string;
