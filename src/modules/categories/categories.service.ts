@@ -7,7 +7,7 @@ import { IsNull, Not, QueryFailedError, Repository } from 'typeorm';
 import { ParentCategoryFinder } from './finders/parent-category.finder';
 import { ICategory } from 'src/interfaces/category.interface';
 import { ParentCategoryValidatorService } from './validators/parent-category.validator';
-import { CategoryValidatorService } from './validators/category.validator.service';
+import { CategoryValidatorService } from '../../common/validators/category.validator.service';
 import { DeleteResult } from 'typeorm/browser';
 import { AuthService } from '../auth/auth.service';
 import { StoreValidatorService } from '../auth/validators/validate-store-exists.validator';
@@ -53,29 +53,6 @@ export class CategoriesService {
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   //! Organizar este codigo
   // async categoryToCreate(dto: CreateCategoryDto, storeId: string): Promise<Category> {
   //   await this.validateCategoryName(dto.name, storeId);
@@ -86,11 +63,6 @@ export class CategoriesService {
   //   }
   //   return this.categoryRepo.save(category);
   // }
-
-
-
-
-
 
 
 
