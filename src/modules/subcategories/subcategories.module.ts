@@ -9,13 +9,20 @@ import { CategoryValidatorService } from './validators/category-validator.servic
 import { StoreValidatorService } from '../auth/validators/validate-store-exists.validator';
 import { CategoriesModule } from '../categories/categories.module';
 import { SubcategoriesRepositoryService } from './repositories/subcategories.repository';
+import { LogMethod } from 'src/common/decorators/logging.decorator';
 
 @Module({
   controllers: [SubcategoriesController],
-  providers: [SubcategoriesService, CategoryValidatorService, StoreValidatorService, SubcategoriesRepositoryService],
+  providers: [SubcategoriesService,
+    CategoryValidatorService,
+    StoreValidatorService,
+    SubcategoriesRepositoryService,
+
+  ],
   imports: [
     TypeOrmModule.forFeature([Subcategory, Category, Store]),
     CategoriesModule,
+
 
 
   ],
