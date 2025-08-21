@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, Logger, ConflictException } from '@nestjs/common';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 import { SubcategoryResponseDto } from './dto/subcategory-response.dto';
@@ -6,11 +6,12 @@ import { StoreValidatorService } from '../auth/validators/validate-store-exists.
 import { InjectRepository } from '@nestjs/typeorm';
 import { Subcategory } from './entities/subcategory.entity';
 import { Repository } from 'typeorm';
-import { CategoryValidatorService } from '../categories/validators/category.validator.service';
+import { CategoryValidatorService } from '../../common/validators/category.validator.service';
 import { CreateSubcategoryFinder } from './create-subcategory.finder';
 import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { SubcategoryMapper } from './mappers/subcategory.mapper';
 import { Category } from '../categories/entities/category.entity';
+import { SelectQueryBuilder } from 'typeorm/browser';
 
 @Injectable()
 export class SubcategoriesService {
@@ -23,6 +24,7 @@ export class SubcategoriesService {
     private readonly categoryRepository: Repository<Category>,
     private readonly storeValidator: StoreValidatorService,
     private readonly categoryValidatorService: CategoryValidatorService,
+    // private readonly subcategoryMapper: SubcategoryMapper
 
 
   ) { }
@@ -99,23 +101,78 @@ export class SubcategoriesService {
   }
 
 
-  findOne(id: number) {
-    return `This action returns a #${id} subcategory`;
+  async findOne(id: string, storeId: string): Promise<SubcategoryResponseDto> {
+    this.logFindOneAttempt(id);
+
+    const subcategory = await this.findSubcategoryByIdAndStore(id, storeId);
+
+    this.throwIfSubcategoryNotFound(subcategory, id);
+
+    return SubcategoryMapper.toResponseDto(subcategory!);
   }
 
-  update(id: number, updateSubcategoryDto: UpdateSubcategoryDto) {
-    return `This action updates a #${id} subcategory`;
+
+
+  async update(
+    id: string,
+    updateSubcategoryDto: UpdateSubcategoryDto,
+    storeId: string
+  ): Promise<SubcategoryResponseDto> {
+    this.logUpdateAttempt(id);
+
+    //TODO:  AQUI VMAOS
+    const existingSubcategory = await this.findExistingSubcategoryOrThrow(id, storeId);
+
+    await this.validateUpdateData(updateSubcategoryDto, existingSubcategory, storeId);
+
+    const updatedSubcategory = await this.updateSubcategoryEntity(
+      existingSubcategory,
+      updateSubcategoryDto
+    );
+
+    return SubcategoryMapper.toResponseDto(updatedSubcategory);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} subcategory`;
+
+  async remove(id: string, storeId: string): Promise<void> {
+    this.logRemoveAttempt(id);
+
+    await this.findExistingSubcategoryOrThrow(id, storeId);
+
+    await this.softDeleteSubcategory(id);
+
+    this.logRemoveSuccess(id);
   }
 
 
 
+  //TODO : METODOS
 
 
-  ///TODO :  METODOS 
+  private logRemoveAttempt(id: string): void {
+    this.logger.log(`Attempting to delete subcategory with ID: ${id}`);
+  }
+
+  private logSubcategoryNotFound(id: string, storeId: string): void {
+    this.logger.warn(`Subcategory with ID ${id} not found in store ${storeId}`);
+  }
+
+  private async softDeleteSubcategory(id: string): Promise<void> {
+    try {
+      await this.subCategoryRepository.softDelete(id);
+    } catch (error) {
+      this.logSoftDeleteError(id, error);
+      throw new InternalServerErrorException('Error al eliminar la subcategoría');
+    }
+  }
+
+  private logSoftDeleteError(id: string, error: any): void {
+    this.logger.error(`Error performing soft delete for subcategory ${id}: ${error.message}`, error.stack);
+  }
+
+  private logRemoveSuccess(id: string): void {
+    this.logger.log(`Subcategory with ID: ${id} successfully soft deleted`);
+  }
 
 
   private async validateCategoryExists(
@@ -150,5 +207,146 @@ export class SubcategoriesService {
     subcategory.store = storeId;
 
     return subcategory;
+  }
+
+  private async findExistingSubcategoryOrThrow(
+    id: string,
+    storeId: string
+  ): Promise<Subcategory> {
+    const subcategory = await this.subCategoryRepository.findOne({
+      where: { id, store: storeId },
+      relations: ['category'],
+    });
+
+    if (!subcategory) {
+      this.logger.warn(`Subcategory with ID ${id} not found in store ${storeId}`);
+      throw new NotFoundException(`Subcategoría con ID ${id} no encontrada en esta tienda`);
+    }
+
+    return subcategory;
+  }
+
+  private async validateUpdateData(
+    updateDto: UpdateSubcategoryDto,
+    existingSubcategory: Subcategory,
+    storeId: string
+  ): Promise<void> {
+    await this.validateNameUniquenessIfChanged(updateDto, existingSubcategory, storeId);
+    await this.validateCategoryIfProvided(updateDto, storeId);
+  }
+
+  private async validateNameUniquenessIfChanged(
+    updateDto: UpdateSubcategoryDto,
+    existingSubcategory: Subcategory,
+    storeId: string
+  ): Promise<void> {
+    const isNameChanged = updateDto.name && updateDto.name !== existingSubcategory.name;
+
+    if (isNameChanged) {
+      await this.categoryValidatorService.validateUniqueNameSubCategory(
+        updateDto.name,
+        storeId,
+        existingSubcategory.id
+      );
+    }
+  }
+
+  private async validateCategoryIfProvided(
+    updateDto: UpdateSubcategoryDto,
+    storeId: string
+  ): Promise<void> {
+    if (updateDto.categoryId) {
+      await this.validateCategoryExistsAndBelongsToStore(updateDto.categoryId, storeId);
+    }
+  }
+
+  private async validateCategoryExistsAndBelongsToStore(
+    categoryId: string,
+    storeId: string
+  ): Promise<void> {
+    // Implementar validación de que la categoría existe y pertenece a la tienda
+    const categoryExists = await this.categoryRepository.exists({
+      where: { id: categoryId, store: storeId }
+    });
+
+    if (!categoryExists) {
+      this.logger.warn(`Category with ID ${categoryId} not found in store ${storeId}`);
+      throw new NotFoundException(`Categoría con ID ${categoryId} no encontrada en esta tienda`);
+    }
+  }
+
+  private async updateSubcategoryEntity(
+    existingSubcategory: Subcategory,
+    updateDto: UpdateSubcategoryDto
+  ): Promise<Subcategory> {
+    try {
+      const updatedSubcategory = this.subCategoryRepository.merge(
+        existingSubcategory,
+        updateDto
+      );
+
+      return await this.subCategoryRepository.save(updatedSubcategory);
+    } catch (error) {
+      this.logger.error(`Error saving subcategory: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Error al guardar la subcategoría');
+    }
+  }
+
+
+  private async findSubcategoryByIdAndStore(
+    id: string,
+    storeId: string
+  ): Promise<Subcategory | null> {
+    try {
+      const queryBuilder = this.createBaseQueryBuilder(id, storeId);
+
+      if (storeId) {
+        this.addStoreFilter(queryBuilder, storeId);
+      }
+      console.log(`Executing query: ${queryBuilder.getQuery()}`);
+      return await queryBuilder.getOne();
+    } catch (error) {
+      this.logger.error(`Error finding subcategory ${id}: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Error searching for subcategory');
+    }
+  }
+
+  private createBaseQueryBuilder(id: string, storeId: string): SelectQueryBuilder<Subcategory> {
+    return this.subCategoryRepository
+      .createQueryBuilder('subcategory')
+      .leftJoinAndSelect('subcategory.category', 'category') // Solo necesitas la categoría
+      .where('subcategory.id = :id', { id })
+      .andWhere('subcategory.store = :storeId', { storeId }) // Validar que pertenezca al store
+      .andWhere('subcategory.deletedAt IS NULL');
+  }
+
+  private addStoreFilter(
+    queryBuilder: SelectQueryBuilder<Subcategory>,
+    storeId: string
+  ): void {
+    queryBuilder.andWhere('subcategory.store = :storeId', { storeId });
+  }
+
+  private throwIfSubcategoryNotFound(
+    subcategory: Subcategory | null,
+    id: string
+  ): void {
+    if (!subcategory) {
+      this.logger.warn(`Subcategory with ID ${id} not found`);
+      throw new NotFoundException(`Subcategoría con ID ${id} no encontrada`);
+    }
+  }
+
+  private logFindOneAttempt(id: string): void {
+    this.logger.log(`Fetching subcategory with ID: ${id}`);
+  }
+
+  private logFindUpdateAttempt(id: string): void {
+    this.logger.log(`Updating subcategory with ID: ${id}`);
+  }
+
+
+  private logUpdateAttempt(id: string): void {
+    this.logger.log(`Updating subcategory with ID: ${id}`);
   }
 }
