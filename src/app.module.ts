@@ -11,6 +11,7 @@ import { LinceseModule } from './modules/lincese/lincese.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductModule } from './modules/product/product.module';
+import { SubcategoriesModule } from './modules/subcategories/subcategories.module';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, }),
 
@@ -38,7 +39,9 @@ import { ProductModule } from './modules/product/product.module';
 
     ProductModule,
 
-    CategoriesModule
+    CategoriesModule,
+
+    SubcategoriesModule
   ],
   // controllers: [AppController],
   // providers: [AppService],
