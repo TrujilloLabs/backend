@@ -32,26 +32,22 @@ export class SubcategoriesService {
     storeId: string): Promise<SubcategoryResponseDto> {
     await this.storeValidator.validateStoreExists(storeId);
 
-    // Validar que la categoría exista y pertenezca a la tienda
     const category = await this.validateCategoryExists(
       createSubcategoryDto.categoryId,
       storeId
     );
 
-    // Validar nombre único
     await this.categoryValidatorService.validateUniqueNameSubCategory(
       createSubcategoryDto.name,
       storeId
     );
 
-    // Crear entidad
     const subcategory = this.buildSubcategoryEntity(
       createSubcategoryDto,
       storeId,
       category
     );
 
-    // Guardar y retornar
     const savedSubcategory = await this.subCategoryRepository.save(subcategory);
     return SubcategoryMapper.toResponseDto(savedSubcategory);
 
