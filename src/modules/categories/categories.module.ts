@@ -13,6 +13,7 @@ import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { StoreValidatorService } from '../auth/validators/validate-store-exists.validator';
 import { Subcategory } from '../subcategories/entities/subcategory.entity';
+import { SubcategoryValidatorService } from './validators/subcategories-validator.service';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { Subcategory } from '../subcategories/entities/subcategory.entity';
     ParentCategoryValidatorService,
     CategoryValidatorService,
     StoreValidatorService,
+    SubcategoryValidatorService
   ],
-  exports: [CategoryValidatorService],
+  exports: [CategoryValidatorService, SubcategoryValidatorService],
 })
 export class CategoriesModule { }
