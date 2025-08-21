@@ -7,10 +7,14 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from 'src/enums/user-role.enum';
 import { SubcategoryResponseDto } from './dto/subcategory-response.dto';
+import { StoreId } from '../auth/decorators/store-id.decorator';
+import { CategoryResponseDto } from '../categories/dto/category-response.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 
 @ApiTags('subcategories')
 @Controller('subcategories')
+@UseGuards(JwtAuthGuard)
 export class SubcategoriesController {
   constructor(private readonly subcategoriesService: SubcategoriesService) { }
 
@@ -39,10 +43,18 @@ export class SubcategoriesController {
     description: 'Invalid input data'
   })
   @Post()
-  create(@Body() createSubcategoryDto: CreateSubcategoryDto) {
-    return this.subcategoriesService.create(createSubcategoryDto);
+  create(
+    @Body() createSubcategoryDto: CreateSubcategoryDto,
+    @StoreId() storeId: string
+  ): Promise<CategoryResponseDto> {
+    return this.subcategoriesService.create(createSubcategoryDto, storeId);
   }
 
+
+
+
+
+  //TODO : MEYODOS
   @Get()
   findAll() {
     return this.subcategoriesService.findAll();
