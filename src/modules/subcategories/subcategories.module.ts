@@ -13,7 +13,7 @@ import { CategoriesModule } from '../categories/categories.module';
   controllers: [SubcategoriesController],
   providers: [SubcategoriesService, CategoryValidatorService, StoreValidatorService],
   imports: [
-    TypeOrmModule.forFeature([Subcategory, Category]),
+    TypeOrmModule.forFeature([Subcategory, Category, Store]),
     CategoriesModule,
 
 
