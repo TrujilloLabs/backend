@@ -3,7 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Subcategory } from "../entities/subcategory.entity";
 import { Repository } from "typeorm";
 import { SelectQueryBuilder } from "typeorm/browser";
-
+import { SubcategoryLogger } from "../utils/subcategory-logger.helper";
+import { LogMethod } from "src/common/decorators/logging.decorator";
 @Injectable()
 export class SubcategoriesRepositoryService {
     private readonly logger = new Logger(SubcategoriesRepositoryService.name);
@@ -12,7 +13,6 @@ export class SubcategoriesRepositoryService {
         @InjectRepository(Subcategory)
         private readonly subCategoryRepository: Repository<Subcategory>,
     ) { }
-
 
     createBaseQueryBuilder(id: string, storeId: string): SelectQueryBuilder<Subcategory> {
         return this.subCategoryRepository
@@ -23,14 +23,13 @@ export class SubcategoriesRepositoryService {
             .andWhere('subcategory.deletedAt IS NULL');
     }
 
-
+    @LogMethod('warn')
     async findSubcategoryByIdAndStore(
         id: string,
         storeId: string
     ): Promise<Subcategory | null> {
         try {
             const queryBuilder = this.createBaseQueryBuilder(id, storeId);
-            // const queryBuilder = this.createBaseQueryBuilder(id, storeId);
 
             if (storeId) {
                 this.addStoreFilter(queryBuilder, storeId);
@@ -38,7 +37,6 @@ export class SubcategoriesRepositoryService {
             console.log(`Executing query: ${queryBuilder.getQuery()}`);
             return await queryBuilder.getOne();
         } catch (error) {
-            this.logger.error(`Error finding subcategory ${id}: ${error.message}`, error.stack);
             throw new InternalServerErrorException('Error searching for subcategory');
         }
     }
@@ -48,5 +46,14 @@ export class SubcategoriesRepositoryService {
         storeId: string
     ): void {
         queryBuilder.andWhere('subcategory.store = :storeId', { storeId });
+    }
+
+    @LogMethod('warn')
+    async softDeleteSubcategory(id: string): Promise<void> {
+        try {
+            await this.subCategoryRepository.softDelete(id);
+        } catch (error) {
+            throw new InternalServerErrorException('Error al eliminar la subcategoría');
+        }
     }
 }
