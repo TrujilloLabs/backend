@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { SubcategoriesService } from './subcategories.service';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from 'src/enums/user-role.enum';
@@ -52,13 +52,43 @@ export class SubcategoriesController {
 
 
 
+  @Get()
+  @Roles(Role.ADMIN_TIENDA, Role.CLIENTE) // Ajusta según los roles que necesiten acceso
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all subcategories' })
+  @ApiQuery({
+    name: 'storeId',
+    required: false,
+    description: 'Filter subcategories by store ID',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List of subcategories retrieved successfully',
+    type: [SubcategoryResponseDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error',
+  })
+  async findAll(
+    @Query('storeId') storeId?: string,
+    @StoreId() userStoreId?: string,
+  ): Promise<SubcategoryResponseDto[]> {
+
+    const targetStoreId = storeId || userStoreId;
+
+    if (targetStoreId) {
+      return this.subcategoriesService.findAllByStore(targetStoreId);
+    }
+
+    return this.subcategoriesService.findAll(userStoreId);
+  }
+
+
 
 
   //TODO : MEYODOS
-  @Get()
-  findAll() {
-    return this.subcategoriesService.findAll();
-  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
