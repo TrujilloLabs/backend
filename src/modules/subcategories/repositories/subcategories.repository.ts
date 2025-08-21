@@ -3,7 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Subcategory } from "../entities/subcategory.entity";
 import { Repository } from "typeorm";
 import { SelectQueryBuilder } from "typeorm/browser";
-import { SubcategoryLogger } from "../utils/subcategory-logger.helper";
 import { LogMethod } from "src/common/decorators/logging.decorator";
 @Injectable()
 export class SubcategoriesRepositoryService {
