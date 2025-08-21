@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus, Query, ParseUUIDPipe } from '@nestjs/common';
 import { SubcategoriesService } from './subcategories.service';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from 'src/enums/user-role.enum';
@@ -85,23 +85,79 @@ export class SubcategoriesController {
     return this.subcategoriesService.findAll(userStoreId);
   }
 
-
-
-
-  //TODO : MEYODOS
-
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subcategoriesService.findOne(+id);
+  @Roles(Role.ADMIN_TIENDA, Role.CLIENTE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get a subcategory by ID' })
+  @ApiParam({ name: 'id', description: 'Subcategory ID', type: String })
+  @ApiQuery({
+    name: 'storeId',
+    required: false,
+    description: 'Filter by store ID',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Subcategory retrieved successfully',
+    type: SubcategoryResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Subcategory not found',
+  })
+  async findOne(
+    @Param('id', ParseUUIDPipe) subcategoriId: string,
+    // @Query('storeId') userStoreId?: string,
+    @StoreId() StoreId: string,
+  ): Promise<SubcategoryResponseDto> {
+    // Priorizar storeId de query, luego el del usuario autenticado
+    // const targetStoreId = storeId || userStoreId;
+    return this.subcategoriesService.findOne(subcategoriId, StoreId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubcategoryDto: UpdateSubcategoryDto) {
-    return this.subcategoriesService.update(+id, updateSubcategoryDto);
+  @Roles(Role.ADMIN_TIENDA)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a subcategory' })
+  @ApiParam({ name: 'id', description: 'Subcategory ID', type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Subcategory updated successfully',
+    type: SubcategoryResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Subcategory not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Subcategory name already exists',
+  })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateSubcategoryDto: UpdateSubcategoryDto,
+    @StoreId() storeId: string,
+  ): Promise<SubcategoryResponseDto> {
+    return this.subcategoriesService.update(id, updateSubcategoryDto, storeId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subcategoriesService.remove(+id);
+  @Roles(Role.ADMIN_TIENDA)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a subcategory' })
+  @ApiParam({ name: 'id', description: 'Subcategory ID', type: String })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Subcategory deleted successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Subcategory not found',
+  })
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @StoreId() storeId: string,
+  ): Promise<void> {
+    await this.subcategoriesService.remove(id, storeId);
   }
 }
