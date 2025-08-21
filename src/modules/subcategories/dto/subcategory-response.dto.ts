@@ -1,34 +1,28 @@
-
-import {
-    IsUUID,
-    IsNotEmpty,
-    IsString,
-    MaxLength,
-    IsOptional,
-    IsBoolean,
-    Min,
-} from 'class-validator';
-import { PartialType, ApiProperty } from '@nestjs/swagger';
+// dto/subcategory-response.dto.ts
+import { ApiProperty } from '@nestjs/swagger';
 
 export class SubcategoryResponseDto {
-    @ApiProperty()
+    @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
     id: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'Hamburguesas' })
     name: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: true })
     isVisible: boolean;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
     categoryId: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
+    storeId: string;
+
+    @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
     createdAt: Date;
 
-    @ApiProperty()
+    @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
     updatedAt: Date;
 
-    @ApiProperty()
-    deletedAt: Date;
+    @ApiProperty({ example: null, required: false })
+    deletedAt?: Date;
 }
