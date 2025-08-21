@@ -106,7 +106,7 @@ export class SubcategoriesService {
 
     const subcategory = await this.findSubcategoryByIdAndStore(id, storeId);
 
-    this.throwIfSubcategoryNotFound(subcategory, id);
+    this.subcategoryValidatorService.throwIfSubcategoryNotFound(subcategory, id);
 
     return SubcategoryMapper.toResponseDto(subcategory!);
   }
@@ -123,7 +123,9 @@ export class SubcategoriesService {
     //TODO:  AQUI VMAOS
     const existingSubcategory = await this.findExistingSubcategoryOrThrow(id, storeId);
 
-    await this.validateUpdateData(updateSubcategoryDto, existingSubcategory, storeId);
+    // await this.validateUpdateData(updateSubcategoryDto, existingSubcategory, storeId);
+
+    await this.subcategoryValidatorService.validateUpdateData(updateSubcategoryDto, existingSubcategory, storeId);
 
     const updatedSubcategory = await this.updateSubcategoryEntity(
       existingSubcategory,
@@ -174,7 +176,6 @@ export class SubcategoriesService {
     this.logger.log(`Subcategory with ID: ${id} successfully soft deleted`);
   }
 
-
   private buildSubcategoryEntity(
     dto: CreateSubcategoryDto,
     storeId: string,
@@ -206,55 +207,6 @@ export class SubcategoriesService {
     return subcategory;
   }
 
-  private async validateUpdateData(
-    updateDto: UpdateSubcategoryDto,
-    existingSubcategory: Subcategory,
-    storeId: string
-  ): Promise<void> {
-    await this.validateNameUniquenessIfChanged(updateDto, existingSubcategory, storeId);
-    await this.validateCategoryIfProvided(updateDto, storeId);
-  }
-
-  private async validateNameUniquenessIfChanged(
-    updateDto: UpdateSubcategoryDto,
-    existingSubcategory: Subcategory,
-    storeId: string
-  ): Promise<void> {
-    const isNameChanged = updateDto.name && updateDto.name !== existingSubcategory.name;
-
-    if (isNameChanged) {
-      await this.categoryValidatorService.validateUniqueNameSubCategory(
-        updateDto.name,
-        storeId,
-        existingSubcategory.id
-      );
-    }
-  }
-
-  private async validateCategoryIfProvided(
-    updateDto: UpdateSubcategoryDto,
-    storeId: string
-  ): Promise<void> {
-    if (updateDto.categoryId) {
-      await this.validateCategoryExistsAndBelongsToStore(updateDto.categoryId, storeId);
-    }
-  }
-
-  private async validateCategoryExistsAndBelongsToStore(
-    categoryId: string,
-    storeId: string
-  ): Promise<void> {
-    // Implementar validación de que la categoría existe y pertenece a la tienda
-    const categoryExists = await this.categoryRepository.exists({
-      where: { id: categoryId, store: storeId }
-    });
-
-    if (!categoryExists) {
-      this.logger.warn(`Category with ID ${categoryId} not found in store ${storeId}`);
-      throw new NotFoundException(`Categoría con ID ${categoryId} no encontrada en esta tienda`);
-    }
-  }
-
   private async updateSubcategoryEntity(
     existingSubcategory: Subcategory,
     updateDto: UpdateSubcategoryDto
@@ -271,7 +223,6 @@ export class SubcategoriesService {
       throw new InternalServerErrorException('Error al guardar la subcategoría');
     }
   }
-
 
   private async findSubcategoryByIdAndStore(
     id: string,
@@ -307,16 +258,6 @@ export class SubcategoriesService {
     queryBuilder.andWhere('subcategory.store = :storeId', { storeId });
   }
 
-  private throwIfSubcategoryNotFound(
-    subcategory: Subcategory | null,
-    id: string
-  ): void {
-    if (!subcategory) {
-      this.logger.warn(`Subcategory with ID ${id} not found`);
-      throw new NotFoundException(`Subcategoría con ID ${id} no encontrada`);
-    }
-  }
-
   private logFindOneAttempt(id: string): void {
     this.logger.log(`Fetching subcategory with ID: ${id}`);
   }
@@ -324,7 +265,6 @@ export class SubcategoriesService {
   private logFindUpdateAttempt(id: string): void {
     this.logger.log(`Updating subcategory with ID: ${id}`);
   }
-
 
   private logUpdateAttempt(id: string): void {
     this.logger.log(`Updating subcategory with ID: ${id}`);
