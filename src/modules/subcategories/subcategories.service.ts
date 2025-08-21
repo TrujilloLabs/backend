@@ -12,7 +12,7 @@ import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { SubcategoryMapper } from './mappers/subcategory.mapper';
 import { Category } from '../categories/entities/category.entity';
 import { SelectQueryBuilder } from 'typeorm/browser';
-
+import { SubcategoryValidatorService } from '../categories/validators/subcategories-validator.service';
 @Injectable()
 export class SubcategoriesService {
   private readonly logger = new Logger(SubcategoriesService.name);
@@ -24,7 +24,7 @@ export class SubcategoriesService {
     private readonly categoryRepository: Repository<Category>,
     private readonly storeValidator: StoreValidatorService,
     private readonly categoryValidatorService: CategoryValidatorService,
-    // private readonly subcategoryMapper: SubcategoryMapper
+    private readonly subcategoryValidatorService: SubcategoryValidatorService,
 
 
   ) { }
@@ -35,7 +35,7 @@ export class SubcategoriesService {
     storeId: string): Promise<SubcategoryResponseDto> {
     await this.storeValidator.validateStoreExists(storeId);
 
-    const category = await this.validateCategoryExists(
+    const category = await this.subcategoryValidatorService.validateCategoryExists(
       createSubcategoryDto.categoryId,
       storeId
     );
@@ -174,26 +174,6 @@ export class SubcategoriesService {
     this.logger.log(`Subcategory with ID: ${id} successfully soft deleted`);
   }
 
-
-  private async validateCategoryExists(
-    categoryId: string,
-    storeId: string
-  ): Promise<Category> {
-    const category = await this.categoryRepository.findOne({
-      where: {
-        id: categoryId,
-        store: storeId
-      }
-    });
-
-    if (!category) {
-      throw new NotFoundException(
-        `Categoría con ID ${categoryId} no encontrada en la tienda ${storeId}`
-      );
-    }
-
-    return category;
-  }
 
   private buildSubcategoryEntity(
     dto: CreateSubcategoryDto,
