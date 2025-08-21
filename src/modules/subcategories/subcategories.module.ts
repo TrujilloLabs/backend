@@ -8,16 +8,17 @@ import { Store } from '../stores/entities/store.entity';
 import { CategoryValidatorService } from './validators/category-validator.service';
 import { StoreValidatorService } from '../auth/validators/validate-store-exists.validator';
 import { CategoriesModule } from '../categories/categories.module';
+import { SubcategoriesRepositoryService } from './repositories/subcategories.repository';
 
 @Module({
   controllers: [SubcategoriesController],
-  providers: [SubcategoriesService, CategoryValidatorService, StoreValidatorService],
+  providers: [SubcategoriesService, CategoryValidatorService, StoreValidatorService, SubcategoriesRepositoryService],
   imports: [
     TypeOrmModule.forFeature([Subcategory, Category, Store]),
     CategoriesModule,
 
 
   ],
-  exports: [SubcategoriesService],
+  exports: [SubcategoriesService, SubcategoriesRepositoryService],
 })
 export class SubcategoriesModule { }
