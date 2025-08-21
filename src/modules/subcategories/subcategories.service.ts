@@ -13,6 +13,7 @@ import { SubcategoryMapper } from './mappers/subcategory.mapper';
 import { Category } from '../categories/entities/category.entity';
 import { SelectQueryBuilder } from 'typeorm/browser';
 import { SubcategoryValidatorService } from '../categories/validators/subcategories-validator.service';
+import { SubcategoriesRepositoryService } from './repositories/subcategories.repository';
 @Injectable()
 export class SubcategoriesService {
   private readonly logger = new Logger(SubcategoriesService.name);
@@ -25,6 +26,7 @@ export class SubcategoriesService {
     private readonly storeValidator: StoreValidatorService,
     private readonly categoryValidatorService: CategoryValidatorService,
     private readonly subcategoryValidatorService: SubcategoryValidatorService,
+    private readonly subcategoriesRepositoryService: SubcategoriesRepositoryService,
 
 
   ) { }
@@ -104,7 +106,7 @@ export class SubcategoriesService {
   async findOne(id: string, storeId: string): Promise<SubcategoryResponseDto> {
     this.logFindOneAttempt(id);
 
-    const subcategory = await this.findSubcategoryByIdAndStore(id, storeId);
+    const subcategory = await this.subcategoriesRepositoryService.findSubcategoryByIdAndStore(id, storeId);
 
     this.subcategoryValidatorService.throwIfSubcategoryNotFound(subcategory, id);
 
@@ -224,39 +226,6 @@ export class SubcategoriesService {
     }
   }
 
-  private async findSubcategoryByIdAndStore(
-    id: string,
-    storeId: string
-  ): Promise<Subcategory | null> {
-    try {
-      const queryBuilder = this.createBaseQueryBuilder(id, storeId);
-
-      if (storeId) {
-        this.addStoreFilter(queryBuilder, storeId);
-      }
-      console.log(`Executing query: ${queryBuilder.getQuery()}`);
-      return await queryBuilder.getOne();
-    } catch (error) {
-      this.logger.error(`Error finding subcategory ${id}: ${error.message}`, error.stack);
-      throw new InternalServerErrorException('Error searching for subcategory');
-    }
-  }
-
-  private createBaseQueryBuilder(id: string, storeId: string): SelectQueryBuilder<Subcategory> {
-    return this.subCategoryRepository
-      .createQueryBuilder('subcategory')
-      .leftJoinAndSelect('subcategory.category', 'category') // Solo necesitas la categoría
-      .where('subcategory.id = :id', { id })
-      .andWhere('subcategory.store = :storeId', { storeId }) // Validar que pertenezca al store
-      .andWhere('subcategory.deletedAt IS NULL');
-  }
-
-  private addStoreFilter(
-    queryBuilder: SelectQueryBuilder<Subcategory>,
-    storeId: string
-  ): void {
-    queryBuilder.andWhere('subcategory.store = :storeId', { storeId });
-  }
 
   private logFindOneAttempt(id: string): void {
     this.logger.log(`Fetching subcategory with ID: ${id}`);
