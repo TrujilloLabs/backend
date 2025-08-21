@@ -12,12 +12,14 @@ import { AuthService } from '../auth/auth.service';
 import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { StoreValidatorService } from '../auth/validators/validate-store-exists.validator';
+import { Subcategory } from '../subcategories/entities/subcategory.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Category]),
+    TypeOrmModule.forFeature([Category, Subcategory]),
     UsersModule,
-    AuthModule
+    AuthModule,
+
   ],
   controllers: [CategoriesController],
   providers: [
@@ -27,5 +29,6 @@ import { StoreValidatorService } from '../auth/validators/validate-store-exists.
     CategoryValidatorService,
     StoreValidatorService,
   ],
+  exports: [CategoryValidatorService],
 })
 export class CategoriesModule { }
