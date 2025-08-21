@@ -15,6 +15,7 @@ import { ProductValidatorService } from './validators/product-validator.service'
 import { DeleteResult } from 'typeorm/browser';
 import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { mapToResponseDto } from './mappers/product.mapper';
+import { Subcategory } from '../subcategories/entities/subcategory.entity';
 
 @Injectable()
 export class ProductService {
@@ -31,7 +32,7 @@ export class ProductService {
     createProductDto: CreateProductDto,
     storeId: string,
   ): Promise<ProductResponseDto> {
-    await this.validateCategory(createProductDto.categoryId, storeId);
+    await this.validateCategory(createProductDto.subcategoryId, storeId);
 
     const product = this.buildProductEntity(createProductDto, storeId);
     const savedProduct = await this.productRepository.save(product);
@@ -55,7 +56,7 @@ export class ProductService {
     const [products, total] = await this.productRepository.findAndCount({
       where,
       relations: {
-        category: true, // Aseguramos que la categoría se cargue
+        subcategory: true, // Aseguramos que la categoría se cargue
       },
       skip,
       take: limit,
@@ -132,7 +133,7 @@ export class ProductService {
     return this.productRepository.create({
       ...createProductDto,
       storeId,
-      category: { id: createProductDto.categoryId },
+      subcategory: { id: createProductDto.subcategoryId } as Subcategory, // Asignar subcategoría por ID
     });
   }
 
@@ -232,10 +233,10 @@ export class ProductService {
         storeId
       },
       relations: {
-        // category: true
-        category: {
-          parentCategory: true
-        }
+        subcategory: true
+        // category: {
+        //   parentCategory: true
+        // }
       }
     });
 
@@ -271,9 +272,9 @@ export class ProductService {
   private applyUpdates(product: Product, updateDto: UpdateProductDto): void {
     // Actualizar solo los campos proporcionados
     Object.keys(updateDto).forEach(key => {
-      if (key === 'categoryId' && updateDto.categoryId) {
-        product.category = { id: updateDto.categoryId } as Category;
-      } else if (updateDto[key] !== undefined && key !== 'categoryId') {
+      if (key === 'subcategoryId' && updateDto.subcategoryId) {
+        product.subcategory = { id: updateDto.subcategoryId } as Subcategory; // Asignar subcategoría por ID
+      } else if (updateDto[key] !== undefined && key !== 'subcategoryId') {
         product[key] = updateDto[key];
       }
     });

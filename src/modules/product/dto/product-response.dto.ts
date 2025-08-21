@@ -2,6 +2,7 @@
 import { PartialType, ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { CategoryResponseDto } from 'src/modules/categories/dto/category-response.dto';
+import { SubcategoryResponseDto } from 'src/modules/subcategories/dto/subcategory-response.dto';
 
 
 
@@ -44,7 +45,7 @@ export class ProductResponseDto {
 
     @Expose()
     @ApiProperty()
-    category: CategoryResponseDto;
+    subcategory: SubcategoryResponseDto;
 
     @Expose()
     @ApiProperty()

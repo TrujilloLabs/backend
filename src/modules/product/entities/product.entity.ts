@@ -9,6 +9,7 @@ import {
     DeleteDateColumn,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
+import { Subcategory } from 'src/modules/subcategories/entities/subcategory.entity';
 
 const decimalToNumber = {
     to: (value?: number | null) => value,
@@ -57,9 +58,9 @@ export class Product {
     storeId: string;
 
     // Relación física con Category
-    @ManyToOne(() => Category, (category) => category.products, { eager: true })
-    @JoinColumn({ name: 'category_id' })
-    category: Category;
+    @ManyToOne(() => Subcategory, (subcategory) => subcategory.products, { eager: true })
+    @JoinColumn({ name: 'subcategory_id' })
+    subcategory: Subcategory;
 
     // @Column({ name: 'category_id', type: 'uuid' })
     // categoryId: string;

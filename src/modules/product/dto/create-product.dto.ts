@@ -67,7 +67,7 @@ export class CreateProductDto {
     @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
     @IsNotEmpty({ message: 'El ID de la categoría no puede estar vacío' })
     @IsUUID('4', { message: 'El ID de la categoría debe ser un UUID válido' })
-    categoryId: string;
+    subcategoryId: string;
 
     @ApiProperty({ example: true, default: true })
     @IsOptional()
