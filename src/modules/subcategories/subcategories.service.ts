@@ -12,8 +12,9 @@ import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { SubcategoryMapper } from './mappers/subcategory.mapper';
 import { Category } from '../categories/entities/category.entity';
 import { SelectQueryBuilder } from 'typeorm/browser';
-import { SubcategoryValidatorService } from '../categories/validators/subcategories-validator.service';
+import { SubcategoryValidatorService } from './validators/subcategories-validator.service';
 import { SubcategoriesRepositoryService } from './repositories/subcategories.repository';
+import { LogMethod } from 'src/common/decorators/logging.decorator';
 @Injectable()
 export class SubcategoriesService {
   private readonly logger = new Logger(SubcategoriesService.name);
@@ -102,9 +103,8 @@ export class SubcategoriesService {
     }
   }
 
-
+  @LogMethod('log')
   async findOne(id: string, storeId: string): Promise<SubcategoryResponseDto> {
-    this.logFindOneAttempt(id);
 
     const subcategory = await this.subcategoriesRepositoryService.findSubcategoryByIdAndStore(id, storeId);
 
@@ -113,19 +113,16 @@ export class SubcategoriesService {
     return SubcategoryMapper.toResponseDto(subcategory!);
   }
 
-
-
+  @LogMethod('log')
   async update(
     id: string,
     updateSubcategoryDto: UpdateSubcategoryDto,
     storeId: string
   ): Promise<SubcategoryResponseDto> {
-    this.logUpdateAttempt(id);
+    // this.logUpdateAttempt(id);
 
     //TODO:  AQUI VMAOS
     const existingSubcategory = await this.findExistingSubcategoryOrThrow(id, storeId);
-
-    // await this.validateUpdateData(updateSubcategoryDto, existingSubcategory, storeId);
 
     await this.subcategoryValidatorService.validateUpdateData(updateSubcategoryDto, existingSubcategory, storeId);
 
@@ -137,46 +134,18 @@ export class SubcategoriesService {
     return SubcategoryMapper.toResponseDto(updatedSubcategory);
   }
 
-
+  @LogMethod('log')
   async remove(id: string, storeId: string): Promise<void> {
-    this.logRemoveAttempt(id);
 
     await this.findExistingSubcategoryOrThrow(id, storeId);
 
-    await this.softDeleteSubcategory(id);
+    await this.subcategoriesRepositoryService.softDeleteSubcategory(id);
 
-    this.logRemoveSuccess(id);
   }
 
 
 
   //TODO : METODOS
-
-
-  private logRemoveAttempt(id: string): void {
-    this.logger.log(`Attempting to delete subcategory with ID: ${id}`);
-  }
-
-  private logSubcategoryNotFound(id: string, storeId: string): void {
-    this.logger.warn(`Subcategory with ID ${id} not found in store ${storeId}`);
-  }
-
-  private async softDeleteSubcategory(id: string): Promise<void> {
-    try {
-      await this.subCategoryRepository.softDelete(id);
-    } catch (error) {
-      this.logSoftDeleteError(id, error);
-      throw new InternalServerErrorException('Error al eliminar la subcategoría');
-    }
-  }
-
-  private logSoftDeleteError(id: string, error: any): void {
-    this.logger.error(`Error performing soft delete for subcategory ${id}: ${error.message}`, error.stack);
-  }
-
-  private logRemoveSuccess(id: string): void {
-    this.logger.log(`Subcategory with ID: ${id} successfully soft deleted`);
-  }
 
   private buildSubcategoryEntity(
     dto: CreateSubcategoryDto,
@@ -192,6 +161,7 @@ export class SubcategoriesService {
     return subcategory;
   }
 
+  @LogMethod('warn')
   private async findExistingSubcategoryOrThrow(
     id: string,
     storeId: string
@@ -202,13 +172,13 @@ export class SubcategoriesService {
     });
 
     if (!subcategory) {
-      this.logger.warn(`Subcategory with ID ${id} not found in store ${storeId}`);
       throw new NotFoundException(`Subcategoría con ID ${id} no encontrada en esta tienda`);
     }
 
     return subcategory;
   }
 
+  @LogMethod('warn')
   private async updateSubcategoryEntity(
     existingSubcategory: Subcategory,
     updateDto: UpdateSubcategoryDto
@@ -226,16 +196,4 @@ export class SubcategoriesService {
     }
   }
 
-
-  private logFindOneAttempt(id: string): void {
-    this.logger.log(`Fetching subcategory with ID: ${id}`);
-  }
-
-  private logFindUpdateAttempt(id: string): void {
-    this.logger.log(`Updating subcategory with ID: ${id}`);
-  }
-
-  private logUpdateAttempt(id: string): void {
-    this.logger.log(`Updating subcategory with ID: ${id}`);
-  }
 }
