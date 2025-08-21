@@ -22,13 +22,17 @@ export class Subcategory {
     @Column({ default: true })
     isVisible: boolean;
 
-    // Muchas subcategorías pertenecen a una categoría
-    @ManyToOne(() => Category, (category) => category.subcategories)
+    @ManyToOne(() => Category, (category) => category.subcategories, {
+        onDelete: 'CASCADE'
+    })
+    @JoinColumn({ name: 'category_id' })
     category: Category;
 
-    // Una subcategoría puede tener muchos productos
     @OneToMany(() => Product, (product) => product.subcategory)
     products: Product[];
+
+    @Column({ name: 'store', type: 'uuid' })
+    store: string;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
