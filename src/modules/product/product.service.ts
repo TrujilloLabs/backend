@@ -113,20 +113,6 @@ export class ProductService {
 
   // TODO : METODOS 
 
-  //! verificar la logica de negocio
-  // private async validateCategory(categoryId: string, storeId: string): Promise<void> {
-  //   const categoryExists = await this.subcategoryRepository.exist({
-  //     where: {
-  //       id: categoryId,
-  //       store: storeId,
-  //     },
-  //   });
-
-  //   if (!categoryExists) {
-  //     throw new BadRequestException('Categoría inválida para esta tienda');
-  //   }
-  // }
-
   private buildProductEntity(
     createProductDto: CreateProductDto,
     storeId: string,
@@ -213,25 +199,6 @@ export class ProductService {
     return product;
   }
 
-  // private async validateUpdateData(
-  //   updateDto: UpdateProductDto,
-  //   storeId: string,
-  //   productId: string
-  // ): Promise<void> {
-  //   if (updateDto.categoryId) {
-  //     await this.productValidator.validateCategory(updateDto.categoryId, storeId);
-  //   }
-
-  //   //TODO : estar pendiente
-  //   if (updateDto.name) {
-  //     await this.productValidator.validateProductName(
-  //       updateDto.name,
-  //       storeId,
-  //       updateDto.subcategoryId || '',
-  //       productId
-  //     );
-  //   }
-  // }
 
   private applyUpdates(product: Product, updateDto: UpdateProductDto): void {
     // Actualizar solo los campos proporcionados
