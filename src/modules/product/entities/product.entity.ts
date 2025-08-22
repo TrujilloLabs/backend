@@ -7,6 +7,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
+    BeforeInsert,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Subcategory } from 'src/modules/subcategories/entities/subcategory.entity';
@@ -78,4 +79,16 @@ export class Product {
     //delete
     @DeleteDateColumn({ name: 'deleted_at', nullable: true })
     deletedAt: Date;
+
+    //insertar slug
+    @BeforeInsert()
+    async generateSlug() {
+        if (!this.slug) {
+            this.slug = this.name
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w-]+/g, '')
+                .substring(0, 150);
+        }
+    }
 }
