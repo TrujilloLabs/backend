@@ -18,6 +18,8 @@ export class SubcategoryValidatorService {
     constructor(
         @InjectRepository(Category)
         private readonly categoryRepository: Repository<Category>,
+        @InjectRepository(Subcategory)
+        private readonly subcategoryRepository: Repository<Subcategory>,
         private readonly categoryValidatorService: CategoryValidatorService
     ) { }
 
