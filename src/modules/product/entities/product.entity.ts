@@ -8,6 +8,7 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     BeforeInsert,
+    BeforeUpdate,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Subcategory } from 'src/modules/subcategories/entities/subcategory.entity';
@@ -82,13 +83,39 @@ export class Product {
 
     //insertar slug
     @BeforeInsert()
-    async generateSlug() {
+    checkSlugInsert() {
         if (!this.slug) {
             this.slug = this.name
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^\w-]+/g, '')
-                .substring(0, 150);
         }
+        this.slug = this.name
+            .toLowerCase()
+            .replaceAll(' ', '_')
+            .replaceAll("'", '')
+
+
     }
+
+
+
+    // @BeforeInsert()
+    // async generateSlug() {
+    //     if (!this.slug) {
+    //         this.slug = this.name
+    //             .toLowerCase()
+    //             .replace(/\s+/g, '-')
+    //             .replace(/[^\w-]+/g, '')
+    //             .substring(0, 150);
+    //     }
+    // }
+
+    // @BeforeUpdate()
+    // async updateSlug() {
+    //     if (this.name) {
+    //         this.slug = this.name
+    //             .toLowerCase()
+    //             .replace(/\s+/g, '-')
+    //             .replace(/[^\w-]+/g, '')
+    //             .substring(0, 150);
+    //     }
+    // }
 }
