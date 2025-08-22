@@ -9,6 +9,7 @@ import { Category } from '../../categories/entities/category.entity';
 import { Subcategory } from 'src/modules/subcategories/entities/subcategory.entity';
 import { UpdateSubcategoryDto } from 'src/modules/subcategories/dto/update-subcategory.dto';
 import { CategoryValidatorService } from 'src/common/validators/category.validator.service';
+import { LogMethod } from 'src/common/decorators/logging.decorator';
 // import { SubcategoriesService } from 'src/modules/subcategories/subcategories.service';
 
 @Injectable()
@@ -41,6 +42,27 @@ export class SubcategoryValidatorService {
         }
 
         return category;
+    }
+
+    @LogMethod('warn')
+    async validateSubCategoryExists(
+        categoryId: string,
+        storeId: string
+    ): Promise<Subcategory> {
+        const subcategory = await this.subcategoryRepository.findOne({
+            where: {
+                id: categoryId,
+                store: storeId
+            }
+        });
+
+        if (!subcategory) {
+            throw new NotFoundException(
+                `Categoría con ID ${categoryId} no encontrada en la tienda ${storeId}`
+            );
+        }
+
+        return subcategory;
     }
 
     async validateUpdateData(
