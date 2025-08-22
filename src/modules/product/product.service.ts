@@ -223,7 +223,9 @@ export class ProductService {
 
   private handleSaveError(error: any): never {
     if (error.code === '23505') { // Unique constraint violation
-      throw new ConflictException('El nombre del producto ya existe en esta categoría');
+
+      throw new ConflictException(error.detail || 'Error al guardar el producto: nombre duplicado');
+      // throw new ConflictException('El nombre del producto ya existe en esta categoría');
     }
     throw new InternalServerErrorException('Error al actualizar el producto');
   }
