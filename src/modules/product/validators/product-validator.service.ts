@@ -43,7 +43,7 @@ export class ProductValidatorService {
                 .select('1')
                 // Usa los nombres reales de las columnas (snake_case)
                 .where('product.store_id = :storeId', { storeId })
-                .andWhere('product.category_id = :categoryId', { categoryId }) // Corregido aquí
+                .andWhere('product.subcategory_id = :subcategoryId', { subcategoryId: categoryId }) // Corregido aquí
                 .andWhere('LOWER(TRIM(product.name)) = LOWER(TRIM(:name))', {
                     name: name.trim()
                 });
