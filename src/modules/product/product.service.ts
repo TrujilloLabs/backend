@@ -24,6 +24,9 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Subcategory)
+    private readonly subcategoryRepository: Repository<Subcategory>,
+
     private readonly validator: ProductValidatorService,
   ) { }
 
@@ -108,13 +111,11 @@ export class ProductService {
 
 
 
-
-
   // TODO : METODOS 
 
   //! verificar la logica de negocio
   private async validateCategory(categoryId: string, storeId: string): Promise<void> {
-    const categoryExists = await this.categoryRepository.exist({
+    const categoryExists = await this.subcategoryRepository.exist({
       where: {
         id: categoryId,
         store: storeId,
@@ -226,7 +227,7 @@ export class ProductService {
       await this.validator.validateProductName(
         updateDto.name,
         storeId,
-        updateDto.categoryId || '',
+        updateDto.subcategoryId || '',
         productId
       );
     }
