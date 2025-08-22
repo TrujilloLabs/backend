@@ -61,6 +61,7 @@ export class ProductController {
     );
   }
 
+  //! Varificar y hacer filtrado por el Slug
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN_TIENDA)

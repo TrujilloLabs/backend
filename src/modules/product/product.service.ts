@@ -47,6 +47,7 @@ export class ProductService {
     return mapToResponseDto(savedProduct);
   }
 
+  //! Varificar y hacer filtrado por el slug
   async findAllByStoreId(
     storeId: string,
     paginationDto: PaginationDto,
