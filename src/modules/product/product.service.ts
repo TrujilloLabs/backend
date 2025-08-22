@@ -17,6 +17,7 @@ import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { mapToResponseDto } from './mappers/product.mapper';
 import { Subcategory } from '../subcategories/entities/subcategory.entity';
 import { LogMethod } from 'src/common/decorators/logging.decorator';
+import { SubcategoryValidatorService } from '../subcategories/validators/subcategories-validator.service';
 @Injectable()
 export class ProductService {
   constructor(
@@ -25,8 +26,9 @@ export class ProductService {
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Subcategory)
-    private readonly subcategoryRepository: Repository<Subcategory>,
+    // private readonly subcategoryRepository: Repository<Subcategory>,
     private readonly productValidator: ProductValidatorService,
+    private readonly subcategoryValidator: SubcategoryValidatorService,
 
     // private readonly validator: ProductValidatorService,
   ) { }
@@ -36,9 +38,10 @@ export class ProductService {
     createProductDto: CreateProductDto,
     storeId: string,
   ): Promise<ProductResponseDto> {
-    await this.productValidator.validateCategory(createProductDto.subcategoryId, storeId);
+    await this.subcategoryValidator.validateSubCategoryExists(createProductDto.subcategoryId, storeId);
 
     const product = this.buildProductEntity(createProductDto, storeId);
+
     const savedProduct = await this.productRepository.save(product);
 
     return mapToResponseDto(savedProduct);
