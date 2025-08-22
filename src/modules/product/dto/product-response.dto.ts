@@ -41,6 +41,10 @@ export class ProductResponseDto {
 
     @Expose()
     @ApiProperty()
+    slug: string;
+
+    @Expose()
+    @ApiProperty()
     storeId: string;
 
     @Expose()
