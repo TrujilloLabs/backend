@@ -4,6 +4,7 @@ import { Category } from "src/modules/categories/entities/category.entity";
 import { Product } from "../entities/product.entity";
 import { Repository } from "typeorm";
 import { UpdateProductDto } from "../dto/update-product.dto";
+import { Subcategory } from "src/modules/subcategories/entities/subcategory.entity";
 
 @Injectable()
 export class ProductValidatorService {
@@ -12,10 +13,12 @@ export class ProductValidatorService {
         private readonly categoryRepository: Repository<Category>,
         @InjectRepository(Product)
         private readonly productRepository: Repository<Product>,
+        @InjectRepository(Subcategory)
+        private readonly subcategoryRepository: Repository<Subcategory>,
     ) { }
 
     async validateCategory(categoryId: string, storeId: string): Promise<void> {
-        const exists = await this.categoryRepository.exist({
+        const exists = await this.subcategoryRepository.exist({
             where: {
                 id: categoryId,
                 store: storeId
