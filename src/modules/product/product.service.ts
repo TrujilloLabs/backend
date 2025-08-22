@@ -221,6 +221,7 @@ export class ProductService {
     }
   }
 
+  @LogMethod('error')
   private handleSaveError(error: any): never {
     if (error.code === '23505') { // Unique constraint violation
 
@@ -230,6 +231,7 @@ export class ProductService {
     throw new InternalServerErrorException('Error al actualizar el producto');
   }
 
+  @LogMethod('error')
   private handleDeleteError(error: any, categoryId: string): never {
     if (error.code === '23503') { // Foreign key violation
       throw new ConflictException(
@@ -241,6 +243,7 @@ export class ProductService {
     );
   }
 
+  @LogMethod('warn')
   private async safeDeleteProduct(productId: string, storeId: string): Promise<DeleteResult> {
 
     try {
