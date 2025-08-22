@@ -112,7 +112,7 @@ export class ProductService {
 
   // TODO : METODOS 
 
-
+  //! verificar la logica de negocio
   private async validateCategory(categoryId: string, storeId: string): Promise<void> {
     const categoryExists = await this.categoryRepository.exist({
       where: {
@@ -137,43 +137,6 @@ export class ProductService {
     });
   }
 
-  //! Codigo deprecado en desuso utilizat la otra version
-
-  // private mapToResponseDto(product: Product): ProductResponseDto {
-  //   return {
-  //     id: product.id,
-  //     name: product.name,
-  //     description: product.description,
-  //     price: product.price,
-  //     stock: product.stock,
-  //     priceCop: product.priceCop,
-  //     priceUsd: product.priceUsd,
-  //     imageUrl: product.imageUrl,
-  //     storeId: product.storeId,
-  //     // categoryId: product.category.id,
-  //     // category: this.mapCategoryToDto(product.category),
-  //     category: CategoryMapper.toResponseDto(product.category),
-  //     isActive: product.isActive,
-  //     createdAt: product.createdAt,
-  //     updatedAt: product.updatedAt,
-  //     deletedAt: product.deletedAt,
-  //   };
-  // }
-
-  //! Codigo deprecado en desuso utilizat la otra version
-  // private mapCategoryToDto(category: Category): CategoryResponseDto {
-  //   return {
-  //     id: category.id,
-  //     name: category.name,
-  //     isVisible: category.isVisible,
-  //     storeId: category.store,
-  //     createdAt: category.createdAt,
-  //     updatedAt: category.updatedAt,
-  //     parentCategory: category.parentCategory
-  //       ? this.mapCategoryToDto(category.parentCategory) // Recursividad controlada
-  //       : undefined
-  //   };
-  // }
 
   private buildWhereClause(
     storeId: string,
