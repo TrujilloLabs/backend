@@ -72,6 +72,27 @@ export class ProductValidatorService {
         }
     }
 
+    async validateUpdateData(
+        updateDto: UpdateProductDto,
+        storeId: string,
+        productId: string
+    ): Promise<void> {
+        if (updateDto.categoryId) {
+            await this.validateCategory(updateDto.categoryId, storeId);
+        }
+
+        //TODO : estar pendiente
+        if (updateDto.name) {
+            await this.validateProductName(
+                updateDto.name,
+                storeId,
+                updateDto.subcategoryId || '',
+                productId
+            );
+        }
+    }
+
+
 
 
 }
