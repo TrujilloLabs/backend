@@ -5,7 +5,7 @@ import { Product } from "../entities/product.entity";
 import { Repository } from "typeorm";
 import { UpdateProductDto } from "../dto/update-product.dto";
 import { Subcategory } from "src/modules/subcategories/entities/subcategory.entity";
-
+import { SubcategoryValidatorService } from "src/modules/subcategories/validators/subcategories-validator.service";
 @Injectable()
 export class ProductValidatorService {
     constructor(
