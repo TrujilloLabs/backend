@@ -16,7 +16,6 @@ import { DeleteResult } from 'typeorm/browser';
 import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { mapToResponseDto } from './mappers/product.mapper';
 import { Subcategory } from '../subcategories/entities/subcategory.entity';
-
 @Injectable()
 export class ProductService {
   constructor(
@@ -26,8 +25,9 @@ export class ProductService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Subcategory)
     private readonly subcategoryRepository: Repository<Subcategory>,
+    private readonly productValidator: ProductValidatorService,
 
-    private readonly validator: ProductValidatorService,
+    // private readonly validator: ProductValidatorService,
   ) { }
 
 
@@ -35,7 +35,7 @@ export class ProductService {
     createProductDto: CreateProductDto,
     storeId: string,
   ): Promise<ProductResponseDto> {
-    await this.validateCategory(createProductDto.subcategoryId, storeId);
+    await this.productValidator.validateCategory(createProductDto.subcategoryId, storeId);
 
     const product = this.buildProductEntity(createProductDto, storeId);
     const savedProduct = await this.productRepository.save(product);
@@ -90,7 +90,7 @@ export class ProductService {
   ): Promise<ProductResponseDto> {
     const product = await this.findProductOrFail(productId, storeId);
 
-    await this.validateUpdateData(updateDto, storeId, productId);
+    await this.productValidator.validateUpdateData(updateDto, storeId, productId);
 
     this.applyUpdates(product, updateDto);
 
@@ -114,18 +114,18 @@ export class ProductService {
   // TODO : METODOS 
 
   //! verificar la logica de negocio
-  private async validateCategory(categoryId: string, storeId: string): Promise<void> {
-    const categoryExists = await this.subcategoryRepository.exist({
-      where: {
-        id: categoryId,
-        store: storeId,
-      },
-    });
+  // private async validateCategory(categoryId: string, storeId: string): Promise<void> {
+  //   const categoryExists = await this.subcategoryRepository.exist({
+  //     where: {
+  //       id: categoryId,
+  //       store: storeId,
+  //     },
+  //   });
 
-    if (!categoryExists) {
-      throw new BadRequestException('Categoría inválida para esta tienda');
-    }
-  }
+  //   if (!categoryExists) {
+  //     throw new BadRequestException('Categoría inválida para esta tienda');
+  //   }
+  // }
 
   private buildProductEntity(
     createProductDto: CreateProductDto,
@@ -213,25 +213,25 @@ export class ProductService {
     return product;
   }
 
-  private async validateUpdateData(
-    updateDto: UpdateProductDto,
-    storeId: string,
-    productId: string
-  ): Promise<void> {
-    if (updateDto.categoryId) {
-      await this.validator.validateCategory(updateDto.categoryId, storeId);
-    }
+  // private async validateUpdateData(
+  //   updateDto: UpdateProductDto,
+  //   storeId: string,
+  //   productId: string
+  // ): Promise<void> {
+  //   if (updateDto.categoryId) {
+  //     await this.productValidator.validateCategory(updateDto.categoryId, storeId);
+  //   }
 
-    //TODO : estar pendiente
-    if (updateDto.name) {
-      await this.validator.validateProductName(
-        updateDto.name,
-        storeId,
-        updateDto.subcategoryId || '',
-        productId
-      );
-    }
-  }
+  //   //TODO : estar pendiente
+  //   if (updateDto.name) {
+  //     await this.productValidator.validateProductName(
+  //       updateDto.name,
+  //       storeId,
+  //       updateDto.subcategoryId || '',
+  //       productId
+  //     );
+  //   }
+  // }
 
   private applyUpdates(product: Product, updateDto: UpdateProductDto): void {
     // Actualizar solo los campos proporcionados
