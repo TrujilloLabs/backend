@@ -15,20 +15,8 @@ export class ProductValidatorService {
         private readonly productRepository: Repository<Product>,
         @InjectRepository(Subcategory)
         private readonly subcategoryRepository: Repository<Subcategory>,
+        private readonly subcategoryValidator: SubcategoryValidatorService,
     ) { }
-
-    async validateCategory(categoryId: string, storeId: string): Promise<void> {
-        const exists = await this.subcategoryRepository.exist({
-            where: {
-                id: categoryId,
-                store: storeId
-            }
-        });
-
-        if (!exists) {
-            throw new BadRequestException('Categoría inválida para esta tienda');
-        }
-    }
 
     async validateProductName(
         name: string,
