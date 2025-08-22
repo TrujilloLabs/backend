@@ -7,10 +7,16 @@ import { Category } from '../categories/entities/category.entity';
 import { ProductValidatorService } from './validators/product-validator.service';
 import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { Subcategory } from '../subcategories/entities/subcategory.entity';
+import { SubcategoryValidatorService } from '../subcategories/validators/subcategories-validator.service';
+import { CategoryValidatorService } from 'src/common/validators/category.validator.service';
 
 @Module({
   controllers: [ProductController],
-  providers: [ProductService, ProductValidatorService],
+  providers: [ProductService,
+    ProductValidatorService,
+    SubcategoryValidatorService,
+    CategoryValidatorService,
+  ],
   imports: [
     TypeOrmModule.forFeature([Product, Category, Subcategory]),
   ],
