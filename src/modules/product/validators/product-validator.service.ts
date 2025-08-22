@@ -73,29 +73,4 @@ export class ProductValidatorService {
 
 
 
-
-    // async validateProductName(
-    //     name: string,
-    //     storeId: string,
-    //     categoryId: string,
-    //     excludeProductId?: string
-    // ): Promise<void> {
-
-
-    //     const query = this.productRepository
-    //         .createQueryBuilder('product')
-    //         .where('LOWER(product.name) = LOWER(:name)', { name })
-    //         .andWhere('product.storeId = :storeId', { storeId })
-    //         .andWhere('product.categoryId = :categoryId', { categoryId });
-
-    //     if (excludeProductId) {
-    //         query.andWhere('product.id != :excludeProductId', { excludeProductId });
-    //     }
-
-    //     const exists = await query.getExists();
-
-    //     if (exists) {
-    //         throw new ConflictException('Ya existe un producto con este nombre en la misma categoría');
-    //     }
-    // }
 }
