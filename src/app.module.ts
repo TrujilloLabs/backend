@@ -12,6 +12,7 @@ import { SeedModule } from './modules/seed/seed.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductModule } from './modules/product/product.module';
 import { SubcategoriesModule } from './modules/subcategories/subcategories.module';
+import { CommonModule } from './common/common.module';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, }),
 
@@ -41,7 +42,9 @@ import { SubcategoriesModule } from './modules/subcategories/subcategories.modul
 
     CategoriesModule,
 
-    SubcategoriesModule
+    SubcategoriesModule,
+
+    CommonModule
   ],
   // controllers: [AppController],
   // providers: [AppService],
