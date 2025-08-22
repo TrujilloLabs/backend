@@ -10,6 +10,7 @@ import { StoreValidatorService } from '../auth/validators/validate-store-exists.
 import { CategoriesModule } from '../categories/categories.module';
 import { SubcategoriesRepositoryService } from './repositories/subcategories.repository';
 import { LogMethod } from 'src/common/decorators/logging.decorator';
+import { SubcategoryValidatorService } from './validators/subcategories-validator.service';
 
 @Module({
   controllers: [SubcategoriesController],
@@ -17,6 +18,7 @@ import { LogMethod } from 'src/common/decorators/logging.decorator';
     CategoryValidatorService,
     StoreValidatorService,
     SubcategoriesRepositoryService,
+    SubcategoryValidatorService
 
   ],
   imports: [
@@ -26,6 +28,8 @@ import { LogMethod } from 'src/common/decorators/logging.decorator';
 
 
   ],
-  exports: [SubcategoriesService, SubcategoriesRepositoryService],
+  exports: [SubcategoriesService,
+    SubcategoriesRepositoryService,
+  ],
 })
 export class SubcategoriesModule { }
