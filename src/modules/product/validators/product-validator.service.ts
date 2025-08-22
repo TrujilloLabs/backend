@@ -69,7 +69,8 @@ export class ProductValidatorService {
         productId: string
     ): Promise<void> {
         if (updateDto.categoryId) {
-            await this.validateCategory(updateDto.categoryId, storeId);
+            await this.subcategoryValidator.validateSubCategoryExists(updateDto.categoryId, storeId);
+            // await this.subcategoryValidator.validateCategory(updateDto.categoryId, storeId);
         }
 
         //TODO : estar pendiente
