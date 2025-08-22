@@ -59,6 +59,12 @@ export class CreateProductDto {
     @MaxLength(500, { message: 'La URL de la imagen no puede exceder los 500 caracteres' })
     imageUrl: string;
 
+    //Slug
+    @IsOptional()
+    @IsString({ message: 'El slug debe ser una cadena de texto' })
+    @MaxLength(150, { message: 'El slug no puede exceder los 150 caracteres' })
+    slug?: string;
+
     @IsOptional()
     @IsNotEmpty({ message: 'El ID de la tienda no puede estar vacío' })
     @IsUUID('4', { message: 'El ID de la tienda debe ser un UUID válido' })
