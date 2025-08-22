@@ -16,6 +16,7 @@ import { DeleteResult } from 'typeorm/browser';
 import { CategoryMapper } from '../categories/mappers/category.mapper';
 import { mapToResponseDto } from './mappers/product.mapper';
 import { Subcategory } from '../subcategories/entities/subcategory.entity';
+import { LogMethod } from 'src/common/decorators/logging.decorator';
 @Injectable()
 export class ProductService {
   constructor(
@@ -173,6 +174,7 @@ export class ProductService {
     };
   }
 
+  @LogMethod('warn')
   private async findProductOrFail(
     productId: string,
     storeId: string
