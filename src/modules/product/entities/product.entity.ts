@@ -21,7 +21,7 @@ export class Product {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ length: 150 })
+    @Column({ length: 150, unique: true })
     name: string;
 
     @Column({ type: 'text', nullable: true })
@@ -62,8 +62,9 @@ export class Product {
     @JoinColumn({ name: 'subcategory_id' })
     subcategory: Subcategory;
 
-    // @Column({ name: 'category_id', type: 'uuid' })
-    // categoryId: string;
+    //slug
+    @Column({ length: 150, unique: true })
+    slug: string;
 
     @Column({ type: 'boolean', default: true })
     isActive: boolean;
