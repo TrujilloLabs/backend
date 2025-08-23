@@ -68,6 +68,10 @@ export class Product {
     @Column({ length: 150, unique: true })
     slug: string;
 
+    //tags
+    @Column({ type: 'text', array: true, nullable: true })
+    tags?: string[];
+
     @Column({ type: 'boolean', default: true })
     isActive: boolean;
 
@@ -95,7 +99,14 @@ export class Product {
 
     }
 
+    @BeforeUpdate()
+    checkSlugUpdate() {
+        this.slug = this.slug
+            .toLowerCase()
+            .replaceAll(' ', '_')
+            .replaceAll("'", '');
 
+    }
 
     // @BeforeInsert()
     // async generateSlug() {
