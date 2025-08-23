@@ -44,6 +44,10 @@ export class ProductResponseDto {
     slug: string;
 
     @Expose()
+    @ApiProperty({ required: false })
+    tags?: string[];
+
+    @Expose()
     @ApiProperty()
     storeId: string;
 
