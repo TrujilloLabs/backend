@@ -18,6 +18,7 @@ export function mapToResponseDto(product: Product): ProductResponseDto {
         subcategory: CategoryMapper.toSubcategoryDto(product.subcategory),
         // category: CategoryMapper.toResponseDto(product.category),
         slug: product.slug,
+        tags: product.tags,
         isActive: product.isActive,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
