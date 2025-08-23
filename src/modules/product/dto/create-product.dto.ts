@@ -10,6 +10,7 @@ import {
     IsBoolean,
     IsPositive,
     Max,
+    IsArray,
 } from 'class-validator';
 import { PartialType, ApiProperty } from '@nestjs/swagger';
 
@@ -64,6 +65,13 @@ export class CreateProductDto {
     @IsString({ message: 'El slug debe ser una cadena de texto' })
     @MaxLength(150, { message: 'El slug no puede exceder los 150 caracteres' })
     slug?: string;
+
+    //tags
+    @IsOptional()
+    @IsString({ message: 'Las etiquetas deben ser una cadena de texto' })
+    @MaxLength(150, { message: 'Las etiquetas no pueden exceder los 150 caracteres' })
+    @IsArray({ message: 'Las etiquetas deben ser un arreglo de cadenas de texto' })
+    tags?: string[];
 
     @IsOptional()
     @IsNotEmpty({ message: 'El ID de la tienda no puede estar vacío' })
