@@ -38,6 +38,13 @@ async function bootstrap() {
     }
   })
 
+  // Habilitar CORS
+  app.enableCors({
+    origin: ['http://localhost:3000', 'http://localhost:5173'], // dominios del frontend
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // si necesitas enviar cookies o auth headers
+  });
+
 
 
 
