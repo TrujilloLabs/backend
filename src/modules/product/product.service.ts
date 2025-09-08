@@ -114,6 +114,30 @@ export class ProductService {
     return this.safeDeleteProduct(product.id, storeId);
   }
 
+  // async getProductsByCategory(storeId: string, categoryId: string) {
+  //   const products = await this.productRepository.find({
+  //     where: {
+  //       storeId: storeId,
+  //       subcategory: { category: { id: categoryId } },
+  //     },
+  //     relations: ['subcategory', 'subcategory.category'],
+  //   });
+
+  //   return products;
+  // }
+
+  async getProductsByCategory(storeId: string, categoryId: string) {
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.subcategory', 'subcategory')
+      .leftJoinAndSelect('subcategory.category', 'category')
+      .where('category.id = :categoryId', { categoryId })
+      .andWhere('product.storeId = :storeId', { storeId })
+      .getMany();
+
+    return products;
+  }
+
 
 
   // TODO : METODOS 

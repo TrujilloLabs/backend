@@ -61,6 +61,27 @@ export class ProductController {
     );
   }
 
+  // TODO:Este endpoint es para obtener todos los productos que pertenecen a una categoría principal,
+  @Get('by-category')
+  @UseGuards(RolesGuard)
+  // @Roles(Role.ADMIN_TIENDA)
+  @ApiOperation({ summary: 'Obtener un producto por ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Detalles del producto',
+    type: ProductResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Producto no encontrado',
+  })
+  async getProductsByCategory(
+    @StoreId() storeId: string,
+    @Query('categoryId', ParseUUIDPipe) categoryId: string
+  ) {
+    return this.productService.getProductsByCategory(storeId, categoryId);
+  }
+
   //! Varificar y hacer filtrado por el Slug
   @Get(':id')
   @UseGuards(RolesGuard)
@@ -116,6 +137,10 @@ export class ProductController {
   ) {
     return await this.productService.remove(productId, storeId);
   }
+
+
+
+
 
 
 
