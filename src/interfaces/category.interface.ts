@@ -13,6 +13,8 @@ export interface ICategory {
     // Arreglo de subcategorías.
     subcategories: ICategory[];
 
+    imageURL?: string;
+
     // ID de la tienda a la que pertenece la categoría.
     store: string;
 

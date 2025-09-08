@@ -146,6 +146,7 @@ export class CategoriesService {
     return this.categoryRepo.create({
       name: dto.name,
       store: storeId,
+      imageUrl: dto.imageUrl,
       isVisible: dto.isVisible ?? true,
     });
   }
@@ -196,6 +197,7 @@ export class CategoriesService {
       isVisible: category.isVisible,
       parentCategory: undefined,
       subcategories: [],
+      imageURL: category.imageUrl,
       store: category.store,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsUUID, IsUrl, MaxLength } from 'class-validator';
 import { PartialType, ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
@@ -30,6 +30,12 @@ export class CreateCategoryDto {
     @IsUUID()
     @IsOptional()
     parentCategoryId?: string;
+
+    @ApiProperty({ required: false, example: 'https://example.com/image.jpg' })
+    @IsString({ message: 'La URL de la imagen debe ser una cadena de texto' })
+    @IsUrl({}, { message: 'La URL de la imagen debe ser una URL válida' })
+    @MaxLength(500, { message: 'La URL de la imagen no puede exceder los 500 caracteres' })
+    imageUrl: string;
 
     // @IsUUID()
     // storeId: string;

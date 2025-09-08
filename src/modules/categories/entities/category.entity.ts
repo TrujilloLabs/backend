@@ -40,6 +40,9 @@ export class Category {
     @Column({ name: 'store', type: 'uuid' })
     store: string;
 
+    @Column({ name: 'image_url', length: 500, nullable: true })
+    imageUrl?: string;
+
     @CreateDateColumn()
     createdAt: Date;
 
