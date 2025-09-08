@@ -138,6 +138,27 @@ export class CategoriesService {
     }
   }
 
+  async getSubcategoiesByCategory(storeId: string, categoryId: string) {
+    // 1. Buscar la categoría dentro de la tienda
+    const category = await this.categoryRepo.findOne({
+      where: { id: categoryId, store: storeId },
+      relations: ['subcategories'], // 🔑 cargamos las subcategorías relacionadas
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Categoría con id ${categoryId} no encontrada`);
+    }
+
+    // 2. Retornar solo las subcategorías
+    return category.subcategories;
+  }
+
+
+
+
+
+
+
 
   // TODO: METODOS EXTRAS
 

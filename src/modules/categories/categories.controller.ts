@@ -56,6 +56,17 @@ export class CategoriesController {
     const storeId = req.user.store_id;
     return this.categoriesService.categoryToFindAll(storeId);
   }
+  //TODO:Este endpoint es para obtener todas las subcategorías
+  @Get(':id/subcategories')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN_TIENDA)
+  getSubcategoiesByCategory(
+    @Req() req,
+    @StoreId() storeId: string,
+    @Param('id', ParseUUIDPipe) categoryId: string
+  ) {
+    return this.categoriesService.getSubcategoiesByCategory(storeId, categoryId);
+  }
 
 
   @Get(':id')
