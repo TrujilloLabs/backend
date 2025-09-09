@@ -157,6 +157,7 @@ export class SubcategoriesService {
     subcategory.isVisible = dto.isVisible || false;
     subcategory.category = category;
     subcategory.store = storeId;
+    subcategory.imageUrl = dto.imageUrl
 
     return subcategory;
   }

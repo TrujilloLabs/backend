@@ -34,6 +34,9 @@ export class Subcategory {
     @Column({ name: 'store', type: 'uuid' })
     store: string;
 
+    @Column({ name: 'image_url', length: 500, nullable: true })
+    imageUrl?: string;
+
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 

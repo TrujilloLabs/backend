@@ -17,6 +17,9 @@ export class SubcategoryResponseDto {
     @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
     storeId: string;
 
+    @ApiProperty({ required: false })
+    imageUrl?: string;
+
     @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
     createdAt: Date;
 

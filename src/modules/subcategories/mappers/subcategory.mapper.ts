@@ -10,6 +10,7 @@ export class SubcategoryMapper {
         dto.isVisible = subcategory.isVisible;
         dto.categoryId = subcategory.category.id;
         dto.storeId = subcategory.store;
+        dto.imageUrl = subcategory.imageUrl;
         dto.createdAt = subcategory.createdAt;
         dto.updatedAt = subcategory.updatedAt;
         dto.deletedAt = subcategory.deletedAt;
