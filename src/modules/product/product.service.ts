@@ -126,17 +126,34 @@ export class ProductService {
   //   return products;
   // }
 
-  async getProductsByCategory(storeId: string, categoryId: string) {
-    const products = await this.productRepository
+  // async getProductsByCategory(storeId: string, categoryId: string) {
+  //   const products = await this.productRepository
+  //     .createQueryBuilder('product')
+  //     .leftJoinAndSelect('product.subcategory', 'subcategory')
+  //     .leftJoinAndSelect('subcategory.category', 'category')
+  //     .where('category.id = :categoryId', { categoryId })
+  //     .andWhere('product.storeId = :storeId', { storeId })
+  //     .getMany();
+
+  //   return products;
+  // }
+
+  async getProductsByCategory(storeId: string, categoryId?: string, subcategoryId?: string) {
+    const query = this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.subcategory', 'subcategory')
       .leftJoinAndSelect('subcategory.category', 'category')
-      .where('category.id = :categoryId', { categoryId })
-      .andWhere('product.storeId = :storeId', { storeId })
-      .getMany();
+      .where('product.storeId = :storeId', { storeId });
 
-    return products;
+    if (subcategoryId) {
+      query.andWhere('subcategory.id = :subcategoryId', { subcategoryId });
+    } else if (categoryId) {
+      query.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    return await query.getMany();
   }
+
 
 
 

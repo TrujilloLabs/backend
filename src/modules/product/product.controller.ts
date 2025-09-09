@@ -77,9 +77,11 @@ export class ProductController {
   })
   async getProductsByCategory(
     @StoreId() storeId: string,
-    @Query('categoryId', ParseUUIDPipe) categoryId: string
+    @Query('categoryId',) categoryId?: string,
+    @Query('subcategoryId') subcategoryId?: string,
+
   ) {
-    return this.productService.getProductsByCategory(storeId, categoryId);
+    return this.productService.getProductsByCategory(storeId, categoryId, subcategoryId);
   }
 
   //! Varificar y hacer filtrado por el Slug
