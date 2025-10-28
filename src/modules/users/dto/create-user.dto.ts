@@ -42,9 +42,9 @@ export class CreateUserDto {
     @IsEnum(Role, { message: 'El rol no es válido' })
     role?: Role;
 
-    @IsOptional()
+    @IsNotEmpty({ message: 'El ID de la tienda es requerido' })
     @IsUUID('4', { message: 'El ID de la tienda debe ser un UUID válido' })
-    store_id?: string;
+    store_id: string;
 }
 
 

@@ -18,17 +18,24 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto, storeId: string) {
-    // const hashedPass = await bcrypt.hash(createUserDto.password, 10);
+    try {
+      // Verificar que la tienda existe
+      const store = await this.storesService.findOne(storeId);
+      if (!store) {
+        throw new NotFoundException(`Store with id ${storeId} not found`);
+      }
+      
+      const user = this.userModel.getRepository(User).create({
+        ...createUserDto,
+        password: createUserDto.password,
+        store: { store_id: storeId }
+      });
 
-    const user = this.userModel.getRepository(User).create({
-      ...createUserDto,
-      password: createUserDto.password, // Assuming password is already hashed
-      store: { store_id: storeId }
-    });
-
-    await this.userModel.getRepository(User).save(user);
-
-    return user;
+      const savedUser = await this.userModel.getRepository(User).save(user);
+      return savedUser;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(storeId: string) {

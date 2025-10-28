@@ -8,27 +8,26 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   @Post()
-  create(@Body() dto: CreateUserDto, @Req() req) {
-    const storeId = req.user.store_id;
-    return this.usersService.create(dto, storeId);
+  create(@Body() dto: CreateUserDto) {
+    return this.usersService.create(dto, dto.store_id);
   }
 
   @Get()
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  // @UseGuards(RolesGuard)
+  //@Roles(Role.ADMIN_TIENDA)
   findAll(@Req() req) {
     const storeId = req.user.store_id;
     return this.usersService.findAll(storeId);
   }
 
   @Get(':id')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  //@UseGuards(RolesGuard)
+  //@Roles(Role.ADMIN_TIENDA)
   findOne(@Param('id') userId: string, @Req() req) {
     const storeId = req.user.store_id;
     return this.usersService.findOne(userId, storeId);
@@ -41,8 +40,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+ // @UseGuards(RolesGuard)
+  //@Roles(Role.ADMIN_TIENDA)
   remove(@Param('id') userId: string, @Req() req) {
     const storeId = req.user.store_id;
     return this.usersService.userToRemove(userId, storeId);
