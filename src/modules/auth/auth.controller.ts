@@ -32,6 +32,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() dto: LoginDto) {
+    console.log("Ingresando session",)
     return this.authService.login(dto);
   }
 
