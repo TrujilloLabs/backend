@@ -1,7 +1,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Store } from '../../stores/entities/store.entity';
-import { Role } from '../../../enums/user-role.enum';
+import { Role } from '../../auth/entities/role.entity';
 
 
 @Entity({ name: 'users' })
@@ -27,8 +27,9 @@ export class User {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     registration_date: Date;
 
-    //role no defecto
-    @Column({ type: 'enum', enum: Role, default: Role.CLIENTE })
+    // Relación con Role entity
+    @ManyToOne(() => Role, (role) => role.users, { eager: true })
+    @JoinColumn({ name: 'role_id' })
     role: Role;
 
     // Cliente y admin_tienda deben tener store obligatorio

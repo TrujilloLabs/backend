@@ -25,9 +25,15 @@ export class UsersService {
         throw new NotFoundException(`Store with id ${storeId} not found`);
       }
       
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      
       const user = this.userModel.getRepository(User).create({
-        ...createUserDto,
-        password: createUserDto.password,
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: hashedPassword,
+        telephone: createUserDto.telephone,
+        address: createUserDto.address,
+        registration_date: new Date(),
         store: { store_id: storeId }
       });
 
@@ -112,6 +118,17 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.userModel.getRepository(User).findOne({ where: { email }, relations: ['store'] });
     if (!user) throw new NotFoundException(`User with email ${email} not found`);
+    return user;
+  }
+
+  async findByEmailWithRole(email: string): Promise<User | null> {
+    const user = await this.userModel.getRepository(User).findOne({ 
+      where: { email }, 
+      relations: ['store', 'role', 'role.permissions'] 
+    });
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
     return user;
   }
 
