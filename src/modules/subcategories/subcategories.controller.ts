@@ -21,7 +21,7 @@ export class SubcategoriesController {
 
   @UseGuards(RolesGuard)
   @ApiBearerAuth()
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new subcategory' })
   @ApiBody({ type: CreateSubcategoryDto })
@@ -116,7 +116,7 @@ export class SubcategoriesController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a subcategory' })
   @ApiParam({ name: 'id', description: 'Subcategory ID', type: String })
@@ -142,7 +142,7 @@ export class SubcategoriesController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a subcategory' })
   @ApiParam({ name: 'id', description: 'Subcategory ID', type: String })

@@ -18,7 +18,7 @@ export class StoresController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @Get()
   findAll() {
     return this.storesService.findAll();

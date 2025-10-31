@@ -21,7 +21,7 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new category' })
   @ApiBody({ type: CreateCategoryDto })
@@ -51,7 +51,7 @@ export class CategoriesController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   findAll(@Req() req) {
     const storeId = req.user.store_id;
     return this.categoriesService.categoryToFindAll(storeId);
@@ -59,7 +59,7 @@ export class CategoriesController {
   //TODO:Este endpoint es para obtener todas las subcategorías
   @Get(':id/subcategories')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   getSubcategoiesByCategory(
     @Req() req,
     @StoreId() storeId: string,
@@ -71,7 +71,7 @@ export class CategoriesController {
 
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   findOne(
     @Param('id') categoryId: string,
     @StoreId() storeId: string,
@@ -90,7 +90,7 @@ export class CategoriesController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id', ParseUUIDPipe) categoryId: string,
@@ -102,7 +102,7 @@ export class CategoriesController {
   // Para restaurar categorías eliminadas:
   @Patch(':id/restore')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   restore(
     @Param('id', ParseUUIDPipe) categoryId: string,
     @StoreId() storeId: string,

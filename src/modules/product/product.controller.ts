@@ -25,7 +25,7 @@ export class ProductController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @ApiResponse({
     status: 201,
     description: 'Product created successfully',
@@ -42,7 +42,7 @@ export class ProductController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @ApiOperation({ summary: 'Obtener productos paginados por tienda' })
   @ApiResponse({
     status: 200,
@@ -87,7 +87,7 @@ export class ProductController {
   //! Varificar y hacer filtrado por el Slug
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @ApiOperation({ summary: 'Obtener un producto por ID' })
   @ApiResponse({
     status: 200,
@@ -109,7 +109,7 @@ export class ProductController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @ApiOperation({ summary: 'Actualizar un producto' })
   @ApiResponse({ status: 200, description: 'Producto actualizado', type: ProductResponseDto, })
   @ApiResponse({ status: 400, description: 'Datos de actualización inválidos', })
@@ -128,7 +128,7 @@ export class ProductController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN_TIENDA)
+  @Roles(Role.CLIENTE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Eliminar un producto' })
   @ApiResponse({ status: 204, description: 'Producto eliminado exitosamente', })
